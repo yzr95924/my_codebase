@@ -9,6 +9,9 @@ include_directories(${Boost_INCLUDE_DIRS} ../include)
 link_directories(${Boost_LIBRARY_DIRS} ../lib)
 
 
+set(BOOST_LIBRARY_OBJ boost_thread boost_system boost_serialization)
+set(SYSTEM_LIBRARY_OBJ pthread)
+
 set(CMAKE_BUILD_TYPE "Release")
 #set(CMAKE_BUILD_TYPE "Debug")
 set(CMAKE_C_FLAGS_DEBUG "-Wall -std=c1x -g -ggdb -g2") 
@@ -25,3 +28,7 @@ SET (CMAKE_LINKER "/usr/bin/llvm-ld")
 SET (CMAKE_NM "/usr/bin/llvm-nm")
 SET (CMAKE_OBJDUMP "/usr/bin/llvm-objdump")
 SET (CMAKE_RANLIB "/usr/bin/llvm-ranlib")
+
+add_subdirectory(multhread)
+add_subdirectory(network)
+add_subdirectory(test)
