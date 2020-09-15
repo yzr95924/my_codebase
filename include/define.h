@@ -21,6 +21,7 @@
 #include <cstring>
 #include <chrono>
 #include <unistd.h>
+#include <vector>
 
 namespace tool {
     double GetTimeDiff(struct timeval startTime, struct timeval endTime);
