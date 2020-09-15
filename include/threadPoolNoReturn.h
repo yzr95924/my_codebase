@@ -8,12 +8,13 @@
 #include <condition_variable>
 #include <queue>
 #include <vector>
-
+#include "define.h"
 /**
  *  Simple ThreadPool that creates `threadCount` threads upon its creation,
  *  and pulls from a queue to get new jobs.
  *
  *  This class requires a number of c++11 features be present in your compiler.
+ *  github: https://github.com/nbsdx/ThreadPool
  */
 class ThreadPool final
 {

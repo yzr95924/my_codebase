@@ -19,6 +19,8 @@
 #include <stdint.h>
 #include <fstream>
 #include <cstring>
+#include <chrono>
+#include <unistd.h>
 
 namespace tool {
     double GetTimeDiff(struct timeval startTime, struct timeval endTime);
