@@ -11,7 +11,7 @@ link_directories(${Boost_LIBRARY_DIRS} ../lib)
 
 set(BOOST_LIBRARY_OBJ boost_thread boost_system boost_serialization)
 set(SYSTEM_LIBRARY_OBJ pthread)
-set(CHUNKING_OBJ rfChunking fixChunking)
+set(CHUNKING_OBJ rfChunking fixChunking fastChunking)
 set(UTIL_OBJ utilCore)
 
 set(CMAKE_BUILD_TYPE "Release")
