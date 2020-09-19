@@ -82,6 +82,12 @@ private:
     uint32_t maskL_;
     size_t pos_;
 
+    uint8_t* waitingForChunkingBuffer_;
+
+    uint8_t* chunkBuffer_;
+
+    Data_t fileRecipe_;
+    std::ifstream chunkingFile_;
     /**
      * @brief generate the mask according to the given bits
      * 
@@ -101,6 +107,31 @@ private:
     uint32_t CalNormalSize(const uint32_t min, const uint32_t av,
         const uint32_t max);
 
+    /**
+     * @brief open the chunking file according to the path 
+     * 
+     * @param path the path of the chunking file  
+     */
+    void LoadChunkFile(std::string path);
+
+    /**
+     * @brief Get the Chunking File object
+     * 
+     * @return std::ifstream& the reference to the chunking file  
+     */
+    std::ifstream& GetChunkingFile();
+
+    /**
+     * @brief To get the offset of chunks for a given buffer  
+     * 
+     * @param src the input buffer  
+     * @param len the length of this buffer
+     * @return uint32_t length of this chunk.
+     */
+    uint32_t CutPoint(const uint8_t* src, const uint32_t len);
+
+    // uint32_t FastCDCUpdate(uint8_t* data, size_t len);
+
 public: 
     /**
      * @brief Construct a new Fast C D C object
@@ -111,6 +142,18 @@ public:
      * @param avgSize 
      */
     FastCDC(string filePath, int minSize, int maxSize, int avgSize);
+
+    /**
+     * @brief Destroy the Fast C D C object
+     * 
+     */
+    ~FastCDC();
+
+    /**
+     * @brief run the chunking process  
+     * 
+     */
+    void Chunking();
 };
 
 #endif

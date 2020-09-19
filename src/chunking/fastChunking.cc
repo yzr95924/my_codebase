@@ -57,6 +57,8 @@ static const uint32_t GEAR[] = {
     0x0DC82C11, 0x23FFE354, 0x2EAC53A6, 0x16139E09, 0x0AFD0DBC, 0x2A4D4237,
     0x56A368C7, 0x234325E4, 0x2DCE9187, 0x32E8EA7E};
 
+static size_t fileSize = 0;
+
 static uint32_t normal_size(const uint32_t mi, const uint32_t av,
                             const uint32_t len) {
   uint32_t off = mi + FASTCDC_DIVCEIL(mi, 2);
@@ -113,6 +115,7 @@ size_t fastcdc_update(fcdc_ctx *ctx, uint8_t *data, size_t len, int end,
     chunk blk = {.offset = ctx->pos + offset, .len = cp};
     kv_push(chunk, *cv, blk);
     offset += cp;
+    fileSize += cp;
   }
   ctx->pos += offset;
   return offset;
@@ -134,5 +137,6 @@ size_t fastcdc_stream(FILE *stream, uint32_t mi, uint32_t av, uint32_t ma,
     fseek(stream, offset, SEEK_SET);
   }
   free(data);
+  fprintf(stderr, "fileSize: %lu\n", fileSize);
   return kv_size(*cv);
 }

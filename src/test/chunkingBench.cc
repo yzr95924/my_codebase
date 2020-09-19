@@ -13,6 +13,7 @@
 #include <memory>
 #include "../../include/rfChunking.h"
 #include "../../include/fixChunking.h"
+#include "../../include/fastChunkingTest.h"
 
 void usage() {
     fprintf(stderr, "test [-t chunking type] [-f fileName] [-l minChunkSize] [-h maxChunkSize] [-a avgChunkSize].\n");
@@ -70,15 +71,18 @@ int main(int argc, char* argv[]) {
     fprintf(stderr, "--------------------------\n");
 
     if (type == RF_CHUNKING) {
-        RFChunking* chunker = new RFChunking(filePath, minChunkSize, 
-            maxChunkSize, avgChunkSize);
+        unique_ptr<RFChunking> chunker(new RFChunking(filePath, minChunkSize, 
+            maxChunkSize, avgChunkSize));
         chunker->Chunking();
-        delete chunker;
     } else if (type == FIX_CHUNKING) {
         unique_ptr<FixChunking> chunker(new FixChunking(filePath, minChunkSize,
             maxChunkSize, avgChunkSize));
         chunker->Chunking();
-    } else {
+    } else if (type == FASTCDC_CHUNKING) {
+        unique_ptr<FastCDC> chunker(new FastCDC(filePath, minChunkSize,
+            maxChunkSize, avgChunkSize));
+        chunker->Chunking();
+    }else {
         fprintf(stderr, "Error: wrong chunking algorithm type.\n");
     }
     

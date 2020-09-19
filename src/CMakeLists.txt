@@ -11,11 +11,11 @@ link_directories(${Boost_LIBRARY_DIRS} ../lib)
 
 set(BOOST_LIBRARY_OBJ boost_thread boost_system boost_serialization)
 set(SYSTEM_LIBRARY_OBJ pthread)
-set(CHUNKING_OBJ rfChunking fixChunking fastChunking)
+set(CHUNKING_OBJ rfChunking fixChunking fastChunking fastCDCTest)
 set(UTIL_OBJ utilCore)
 
 set(CMAKE_BUILD_TYPE "Release")
-#set(CMAKE_BUILD_TYPE "Debug")
+# set(CMAKE_BUILD_TYPE "Debug")
 set(CMAKE_C_FLAGS_DEBUG "-Wall -std=c17 -g -ggdb -g2") 
 set(CMAKE_CXX_FLAGS_DEBUG "-Wall -std=c++17 -g -ggdb -g2 -fsanitize=leak -fno-omit-frame-pointer")
 #set(CMAKE_CXX_FLAGS_DEBUG "-Wall -std=c++17 -g -ggdb -g2 -fno-omit-frame-pointer")

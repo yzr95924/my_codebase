@@ -23,8 +23,7 @@
 
 #define RF_CHUNKING 1
 #define FIX_CHUNKING 2
-#define SS_CDC 3
-#define RAPID_CDC 4
+#define FASTCDC_CHUNKING 3
 
 #endif //  CHUNKING_LIB_CONFIGURE!
 
