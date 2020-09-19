@@ -1,17 +1,28 @@
-#include "../../include/fastChunking.h"
-#include <math.h>
+/**
+ * @file fastChunkingTest.h
+ * @author Zuoru YANG (zryang@cse.cuhk.edu.hk)
+ * @brief define the interface of FastCDC
+ * @version 0.1
+ * @date 2020-09-19
+ * 
+ * @copyright Copyright (c) 2020
+ * 
+ */
 
-#define FASTCDC_CLAMP(x, a, b) ((x < (a)) ? (a) : ((x > b) ? b : x))
-#define FASTCDC_DIVCEIL(a, b) ((a) / (b) + ((a) % (b) ? 1 : 0))
-#define FASTCDC_MASK(x) (uint32_t)((1 << FASTCDC_CLAMP(x, 1, 31)) - 1);
+#ifndef FASTCDC_TEST_H
+#define FASTCDC_TEST_H
 
-#define AVERAGE_MIN (1 << 8)
-#define AVERAGE_MAX (1 << 28)
-#define MINIMUM_MIN (AVERAGE_MIN >> 2)
-#define MINIMUM_MAX (AVERAGE_MAX >> 2)
-#define MAXIMUM_MIN (AVERAGE_MIN << 2)
-#define MAXIMUM_MAX (AVERAGE_MAX << 2)
+#include "define.h"
+#include "dataStructure.h"
 
+#define AVERAGE_MIN (1 << 8) // 256B
+#define AVERAGE_MAX (1 << 28) // 256MB
+#define MINIMUM_MIN (AVERAGE_MIN >> 2) // 64B
+#define MINIMUM_MAX (AVERAGE_MAX >> 2) // 64MB
+#define MAXIMUM_MIN (AVERAGE_MIN << 2) // 1MB
+#define MAXIMUM_MAX (AVERAGE_MAX << 2) // 1GB
+
+// a 256 random 32-bit integers 
 static const uint32_t GEAR[] = {
     0x5C95C078, 0x22408989, 0x2D48A214, 0x12842087, 0x530F8AFB, 0x474536B9,
     0x2963B4F1, 0x44CB738B, 0x4EA7403D, 0x4D606B6E, 0x074EC5D3, 0x3AF39D18,
@@ -57,82 +68,49 @@ static const uint32_t GEAR[] = {
     0x0DC82C11, 0x23FFE354, 0x2EAC53A6, 0x16139E09, 0x0AFD0DBC, 0x2A4D4237,
     0x56A368C7, 0x234325E4, 0x2DCE9187, 0x32E8EA7E};
 
-static uint32_t normal_size(const uint32_t mi, const uint32_t av,
-                            const uint32_t len) {
-  uint32_t off = mi + FASTCDC_DIVCEIL(mi, 2);
-  if (off > av)
-    off = av;
-  uint32_t sz = av - off;
-  if (sz > len)
-    return len;
-  return sz;
-}
 
-static uint32_t cut(const uint8_t *src, const uint32_t len, const uint32_t mi,
-                    const uint32_t ma, const uint32_t ns, const uint32_t mask_s,
-                    const uint32_t mask_l) {
-  uint32_t n, fp = 0, i = (len < mi) ? len : mi;
-  n = (ns < len) ? ns : len;
-  for (; i < n; i++) {
-    fp = (fp >> 1) + GEAR[src[i]];
-    if (!(fp & mask_s))
-      return i + 1;
-  }
-  n = (ma < len) ? ma : len;
-  for (; i < n; i++) {
-    fp = (fp >> 1) + GEAR[src[i]];
-    if (!(fp & mask_l))
-      return i + 1;
-  }
-  return i;
-}
+class FastCDC {
+private:
+    int avgChunkSize_;
+    int minChunkSize_;
+    int maxChunkSize_;
 
-fcdc_ctx fastcdc_init(uint32_t mi, uint32_t av, uint32_t ma) {
-  fcdc_ctx ctx = {0};
-  ctx.mi = FASTCDC_CLAMP(mi, MINIMUM_MIN, MINIMUM_MAX);
-  ctx.av = FASTCDC_CLAMP(av, AVERAGE_MIN, AVERAGE_MAX);
-  ctx.ma = FASTCDC_CLAMP(ma, MAXIMUM_MIN, MAXIMUM_MAX);
-  ctx.ns = normal_size(mi, av, ma);
-  uint32_t bits = (uint32_t)round(log2(av));
-  ctx.mask_s = FASTCDC_MASK(bits + 1);
-  ctx.mask_l = FASTCDC_MASK(bits - 1);
-  fprintf(stderr, "mi: %u\n", ctx.mi);
-  fprintf(stderr, "av: %u\n", ctx.av);
-  fprintf(stderr, "ma: %u\n", ctx.ma);
-  fprintf(stderr, "ns: %u\n", ctx.ns);
-  fprintf(stderr, "bits: %u\n", bits);
-  return ctx;
-}
+    uint64_t readSize_;
 
-size_t fastcdc_update(fcdc_ctx *ctx, uint8_t *data, size_t len, int end,
-                      chunk_vec *cv) {
-  size_t offset = 0;
-  while (((len - offset) >= ctx->ma) || (end && (offset < len))) {
-    uint32_t cp = cut(data + offset, len - offset, ctx->mi, ctx->ma, ctx->ns,
-                      ctx->mask_s, ctx->mask_l);
-    chunk blk = {.offset = ctx->pos + offset, .len = cp};
-    kv_push(chunk, *cv, blk);
-    offset += cp;
-  }
-  ctx->pos += offset;
-  return offset;
-}
+    uint32_t normalSize_;
+    uint32_t maskS_;
+    uint32_t maskL_;
+    size_t pos_;
 
-size_t fastcdc_stream(FILE *stream, uint32_t mi, uint32_t av, uint32_t ma,
-                      chunk_vec *cv) {
-  size_t offset = 0;
-  int end = 0;
-  fcdc_ctx cdc = fastcdc_init(mi, av, ma), *ctx = &cdc;
-  size_t rs = ctx->ma * 4;
-  fprintf(stderr, "rs: %lu\n", rs);
-  rs = FASTCDC_CLAMP(rs, 0, UINT32_MAX);
-  uint8_t *data = (uint8_t*) malloc(rs);
-  while (!end) {
-    size_t ar = fread(data, 1, rs, stream);
-    end = feof(stream);
-    offset += fastcdc_update(ctx, data, ar, end, cv);
-    fseek(stream, offset, SEEK_SET);
-  }
-  free(data);
-  return kv_size(*cv);
-}
+    /**
+     * @brief generate the mask according to the given bits
+     * 
+     * @param bits the number of '1' 
+     * @return uint32_t the returned mask
+     */
+    uint32_t GenerateFastCDCMask(uint32_t bits);
+
+    /**
+     * @brief compute the normal size 
+     * 
+     * @param min 
+     * @param max 
+     * @param len 
+     * @return uint32_t 
+     */
+    uint32_t CalNormalSize(const uint32_t min, const uint32_t av,
+        const uint32_t max);
+
+public: 
+    /**
+     * @brief Construct a new Fast C D C object
+     * 
+     * @param filePath 
+     * @param minSize 
+     * @param maxSize 
+     * @param avgSize 
+     */
+    FastCDC(string filePath, int minSize, int maxSize, int avgSize);
+};
+
+#endif

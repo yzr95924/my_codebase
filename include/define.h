@@ -22,10 +22,12 @@
 #include <chrono>
 #include <unistd.h>
 #include <vector>
+#include <math.h>
 
 namespace tool {
     double GetTimeDiff(struct timeval startTime, struct timeval endTime);
+    uint32_t CompareLimit(uint32_t input, uint32_t lower, uint32_t upper);
+    uint32_t DivCeil(uint32_t a, uint32_t b);  
+    uint32_t GenerateFastCDCMask(uint32_t bits);
 }
-
-
 #endif 
