@@ -101,7 +101,7 @@ void FastCDC::LoadChunkFile(std::string path) {
     if (chunkingFile_.is_open()) {
         chunkingFile_.close();
     }
-    chunkingFile_.open(path, std::ios::binary);
+    chunkingFile_.open(path, std::ios::binary | std::ios::in);
 
     if (!chunkingFile_.is_open()) {
         fprintf(stderr, "FastCDC: open file %s error, exit now.\n", path.c_str());
@@ -160,6 +160,8 @@ void FastCDC::Chunking() {
     fprintf(stderr, "Chunking file size (MB): %.4lf\n", (fileSize / 1024.0 / 1024.0));
     fprintf(stderr, "Throughput (MB/s): %.4lf\n", (fileSize / 1024.0 / 1024.0) / totalTime);
 #endif
+
+    fin.close();
 }
 
 /**
