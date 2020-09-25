@@ -17,8 +17,6 @@
  * @param cipherType the type of 
  * @param hashType 
  */
-struct timeval startTime;
-struct timeval endTime;
 
 CryptoTool::CryptoTool(int cipherType, int hashType) {
     cipherType_ = static_cast<ENCRYPT_SET>(cipherType);
@@ -42,6 +40,10 @@ CryptoTool::CryptoTool(int cipherType, int hashType) {
         exit(EXIT_FAILURE);
     }
 
+    encDataSize_ = 0;
+    decDataSize_ = 0;
+    hashDataSize_ = 0;
+    
     fprintf(stderr, "---------CryptoTool Configuration---------\n");
     fprintf(stderr, "openssl version: %s\n", OPENSSL_VERSION_TEXT);
     fprintf(stderr, "cipher type: %s\n", ENCRYPT_STRING[cipherType_].c_str());
@@ -62,6 +64,12 @@ CryptoTool::~CryptoTool() {
     }
     EVP_CIPHER_CTX_free(this->ctx_);
     EVP_MD_CTX_free(this->mdCtx_);
+    fprintf(stderr, "-------CryptoTool Result-----------------\n");
+    fprintf(stderr, "Encrypt Data Size: %lu\n", this->encDataSize_);
+    fprintf(stderr, "Decryption Data Size: %lu\n", this->decDataSize_);
+    fprintf(stderr, "Hash Data Size: %lu\n", this->hashDataSize_);
+    fprintf(stderr, "-----------------------------------------\n");
+    
 }
 
 /**
@@ -120,7 +128,8 @@ bool CryptoTool::EncryptWithKey(uint8_t* inputData, const int dataSize, uint8_t*
     }
 
     cipherLen += len;
-
+    encDataSize_ += cipherLen;
+	
     if (cipherLen != dataSize) {
         EVP_CIPHER_CTX_reset(this->ctx_);
         fprintf(stderr, "CryptoTool: encryption output size not equal to origin size.\n");
@@ -189,6 +198,7 @@ bool CryptoTool::DecryptWithKey(uint8_t* cipherText, const int dataSize, uint8_t
     }
 
     plainLen += len;
+    decDataSize_ += plainLen;
 
     if (plainLen != dataSize) {
         EVP_CIPHER_CTX_reset(this->ctx_);
@@ -254,7 +264,8 @@ bool CryptoTool::GenerateHash(uint8_t* dataBuffer, const int dataSize, uint8_t* 
         EVP_MD_CTX_reset(this->mdCtx_);
         return false;
     }
-
+    
+    hashDataSize_ += dataSize;
     EVP_MD_CTX_reset(this->mdCtx_);
     return true;
 }

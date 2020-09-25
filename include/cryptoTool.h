@@ -31,7 +31,10 @@ private:
     HASH_SET hashType_;
 
     // initialized vector
-    uint8_t* iv_; 
+    uint8_t* iv_;
+    uint64_t encDataSize_;
+    uint64_t decDataSize_;
+    uint64_t hashDataSize_; 
 public:
     /**
      * @brief Construct a new Crypto Tool object
@@ -81,6 +84,10 @@ public:
      * @return false fail 
      */
     bool DecryptWithKey(uint8_t* cipherText, const int dataSize, uint8_t* key, uint8_t* dataBuffer);
+
+    inline uint64_t GetEncDataSize() {return this->encDataSize_;}
+    inline uint64_t GetDecDataSize() {return this->decDataSize_;}
+    inline uint64_t GetHashDataSize() {return this->hashDataSize_;}
 
 };
 
