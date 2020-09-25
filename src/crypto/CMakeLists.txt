@@ -1,0 +1,1 @@
+add_library(cryptoTool STATIC cryptoTool.cc)

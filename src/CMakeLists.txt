@@ -1,18 +1,27 @@
 find_package(Boost 1.36.0 REQUIRED COMPONENTS thread system serialization)
+find_package(OpenSSL REQUIRED)
+
 
 if(Boost_FOUND)
     include_directories(${Boost_INCLUDE_DIRS})
     link_directories(${Boost_LIBRARY_DIRS})
 endif()
 
-include_directories(${Boost_INCLUDE_DIRS} ../include)
-link_directories(${Boost_LIBRARY_DIRS} ../lib)
+if(OPENSSL_FOUND)
+    include_directories(${OPENSSL_INCLUDE_DIR})
+    link_directories(${OPENSSL_LIBRARIES})
+endif()
+
+include_directories(${Boost_INCLUDE_DIRS} ${OPENSSL_INCLUDE_DIR} ../include)
+link_directories(${Boost_LIBRARY_DIRS} ${OPENSSL_LIBRARIES} ../lib)
 
 
 set(BOOST_LIBRARY_OBJ boost_thread boost_system boost_serialization)
 set(SYSTEM_LIBRARY_OBJ pthread)
 set(CHUNKING_OBJ rfChunking fixChunking fastChunking fastCDCTest)
 set(UTIL_OBJ utilCore)
+set(OPENSSL_OBJ ssl crypto)
+set(CRYPTO_OBJ cryptoTool)
 
 set(CMAKE_BUILD_TYPE "Release")
 # set(CMAKE_BUILD_TYPE "Debug")
@@ -36,3 +45,4 @@ add_subdirectory(network)
 add_subdirectory(test)
 add_subdirectory(chunking)
 add_subdirectory(util)
+add_subdirectory(crypto)

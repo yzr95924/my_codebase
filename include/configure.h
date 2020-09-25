@@ -25,5 +25,13 @@
 #define FIX_CHUNKING 2
 #define FASTCDC_CHUNKING 3
 
+
+enum ENCRYPT_SET {AES_256_GCM = 0, AES_256_CFB = 1, AES_256_CBC = 2};
+
+enum HASH_SET {SHA_1 = 0, SHA_256 = 1, MD5 = 2};
+
+// the size cipher block: 128 bits
+#define CRYPTO_BLOCK_SIZE 16
+
 #endif //  CHUNKING_LIB_CONFIGURE!
 

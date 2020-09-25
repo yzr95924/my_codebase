@@ -24,6 +24,8 @@
 #include <vector>
 #include <math.h>
 #include <algorithm>
+#include <unistd.h>
+#include <memory>
 
 namespace tool {
     double GetTimeDiff(struct timeval startTime, struct timeval endTime);

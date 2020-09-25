@@ -9,8 +9,7 @@
  * 
  */
 
-#include <unistd.h>
-#include <memory>
+
 #include "../../include/rfChunking.h"
 #include "../../include/fixChunking.h"
 #include "../../include/fastChunkingTest.h"
