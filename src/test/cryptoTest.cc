@@ -70,10 +70,10 @@ int main(int argc, char* argv[]) {
         inputFile.read((char*)readBuffer, sizeof(uint8_t) * 128 * 1024 * 1024);
         int len = inputFile.gcount();
         end = inputFile.eof();
-	gettimeofday(&startTime, NULL);
+	    gettimeofday(&startTime, NULL);
         cipher->EncryptWithKey(readBuffer, len, key, outputBuffer);
-	gettimeofday(&endTime, NULL);
-	encTime += tool::GetTimeDiff(startTime, endTime);
+	    gettimeofday(&endTime, NULL);
+	    encTime += tool::GetTimeDiff(startTime, endTime);
         outputFile.write((char*)outputBuffer, len);
     }
     inputFile.close();
@@ -93,10 +93,10 @@ int main(int argc, char* argv[]) {
         inputFile.read((char*)readBuffer, sizeof(uint8_t) * 128 * 1024 * 1024);
         int len = inputFile.gcount();
         end = inputFile.eof();
-	gettimeofday(&startTime, NULL);
+	    gettimeofday(&startTime, NULL);
         cipher->DecryptWithKey(readBuffer, len, key, outputBuffer);
-	gettimeofday(&endTime, NULL);
-	decTime += tool::GetTimeDiff(startTime, endTime);
+	    gettimeofday(&endTime, NULL);
+	    decTime += tool::GetTimeDiff(startTime, endTime);
         outputFile.write((char*)outputBuffer, len);
     }
     inputFile.close();
@@ -115,14 +115,15 @@ int main(int argc, char* argv[]) {
         inputFile.read((char*)readBuffer, sizeof(uint8_t) * 128 * 1024 * 1024);
         int len = inputFile.gcount();
         end = inputFile.eof();
-	gettimeofday(&startTime, NULL);
-        cipher->GenerateHash(readBuffer, 128 * 1024 * 1024, hash);
-	gettimeofday(&endTime, NULL);
-	hashTime += tool::GetTimeDiff(startTime, endTime);
+	    gettimeofday(&startTime, NULL);
+        cipher->GenerateHash(readBuffer, len, hash);
+	    gettimeofday(&endTime, NULL);
+	    hashTime += tool::GetTimeDiff(startTime, endTime);
     }
     inputFile.close();
     fprintf(stderr, "hash Done!.\n");
     fprintf(stderr, "hash throughput (MB/s): %.4lf\n", (cipher->GetHashDataSize()) / 1024.0 / 1024.0 / hashTime);
+
     free(readBuffer);
     free(outputBuffer);
     free(key);

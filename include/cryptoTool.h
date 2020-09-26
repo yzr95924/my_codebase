@@ -18,8 +18,13 @@
 
 using namespace std;
 
-static string ENCRYPT_STRING[] = {"AES_256_GCM", "AES_256_CFB", "AES_256_CBC"};
-static string HASHER_STRING[] = {"SHA_1", "SHA_256"};
+static string ENCRYPT_STRING[] = {"AES_256_GCM", "AES_128_GCM", "AES_256_CFB", "AES_128_CFB"};
+static string HASHER_STRING[] = {"SHA_1", "SHA_256", "MD5"};
+
+static const unsigned char gcm_aad[] = {
+    0x4d, 0x23, 0xc3, 0xce, 0xc3, 0x34, 0xb4, 0x9b, 0xdb, 0x37, 0x0c, 0x43,
+    0x7f, 0xec, 0x78, 0xde
+};
 
 class CryptoTool {
 private:
