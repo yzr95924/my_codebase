@@ -18,12 +18,13 @@ void usage() {
 }
 
 int main(int argc, char* argv[]) {
-    const char* optstring = "e:h:f:o:";  
+    const char* optstring = "e:h:f:o:s:";  
     int option;
     int cryptoType;
     int hashType;
     string path;
     string output;
+    int readBufferSize;
     ifstream inputFile;
     ofstream outputFile;
     while ((option = getopt(argc, argv, optstring)) != -1) {
@@ -40,6 +41,9 @@ int main(int argc, char* argv[]) {
             case 'o':
                 output = string(optarg);
                 break;
+            case 's':
+                readBufferSize = atoi(optarg);
+                break;
             case '?':
                 fprintf(stderr, "Error optopt: %c\n", optopt);
                 fprintf(stderr, "Error opterr: %d\n", opterr);
@@ -47,6 +51,12 @@ int main(int argc, char* argv[]) {
                 exit(EXIT_FAILURE);
         }
     }
+    
+    if (argc != 11) {
+        fprintf(stderr, "operator number wrong: %d != 6\n", argc);
+        exit(EXIT_FAILURE);
+    }
+
 
     unique_ptr<CryptoTool> cipher(new CryptoTool(cryptoType, hashType));
     inputFile.open(path, std::ios::in | std::ios::binary);
@@ -55,19 +65,20 @@ int main(int argc, char* argv[]) {
         fprintf(stderr, "Cannot open this input file.\n");
         exit(EXIT_FAILURE);
     }
+    readBufferSize = readBufferSize * 1024;
 
     uint8_t* key = (uint8_t*) malloc(sizeof(uint8_t) * 32);
     memset(key, 0, sizeof(int8_t) * 32);
     uint8_t hash[32];
-    uint8_t* readBuffer = (uint8_t*) malloc(128 * 1024 * 1024);
-    uint8_t* outputBuffer = (uint8_t*) malloc(128 * 1024 * 1024);
+    uint8_t* readBuffer = (uint8_t*) malloc(readBufferSize);
+    uint8_t* outputBuffer = (uint8_t*) malloc(readBufferSize);
     bool end = false;
     double encTime = 0;
     double decTime = 0;
     double hashTime = 0;
     fprintf(stderr, "Start Encryption.\n");
     while (!end) {
-        inputFile.read((char*)readBuffer, sizeof(uint8_t) * 128 * 1024 * 1024);
+        inputFile.read((char*)readBuffer, readBufferSize);
         int len = inputFile.gcount();
         end = inputFile.eof();
 	    gettimeofday(&startTime, NULL);
@@ -90,7 +101,7 @@ int main(int argc, char* argv[]) {
     end = false;
     fprintf(stderr, "Start Decryption.\n");
     while (!end) {
-        inputFile.read((char*)readBuffer, sizeof(uint8_t) * 128 * 1024 * 1024);
+        inputFile.read((char*)readBuffer, sizeof(uint8_t) * readBufferSize);
         int len = inputFile.gcount();
         end = inputFile.eof();
 	    gettimeofday(&startTime, NULL);
@@ -112,7 +123,7 @@ int main(int argc, char* argv[]) {
     end = false;
     fprintf(stderr, "Start hash.\n");
     while (!end) {
-        inputFile.read((char*)readBuffer, sizeof(uint8_t) * 128 * 1024 * 1024);
+        inputFile.read((char*)readBuffer, sizeof(uint8_t) * readBufferSize);
         int len = inputFile.gcount();
         end = inputFile.eof();
 	    gettimeofday(&startTime, NULL);
