@@ -19,7 +19,7 @@
 #define AVERAGE_MAX (1 << 28) // 256MB
 #define MINIMUM_MIN (AVERAGE_MIN >> 2) // 64B
 #define MINIMUM_MAX (AVERAGE_MAX >> 2) // 64MB
-#define MAXIMUM_MIN (AVERAGE_MIN << 2) // 1MB
+#define MAXIMUM_MIN (AVERAGE_MIN << 2) // 1KB
 #define MAXIMUM_MAX (AVERAGE_MAX << 2) // 1GB
 
 // a 256 random 32-bit integers 
@@ -83,8 +83,6 @@ private:
     size_t pos_;
 
     uint8_t* waitingForChunkingBuffer_;
-
-    uint8_t* chunkBuffer_;
 
     Data_t fileRecipe_;
     std::ifstream chunkingFile_;

@@ -6,3 +6,6 @@ target_link_libraries(fastCDC ${CHUNKING_OBJ} ${UTIL_OBJ})
 
 add_executable(cryptoBench cryptoTest.cc)
 target_link_libraries(cryptoBench ${OPENSSL_OBJ} ${UTIL_OBJ} ${CRYPTO_OBJ})
+
+add_executable(compressTest compressTest.cc)
+target_link_libraries(compressTest ${COMPRESS_OBJ} ${UTIL_OBJ} lz4)

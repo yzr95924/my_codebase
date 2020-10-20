@@ -57,19 +57,17 @@ CryptoTool::CryptoTool(int cipherType, int hashType) {
  * 
  */
 CryptoTool::~CryptoTool() {
-    fprintf(stderr, "CryptoTool: Destory the object.\n");
-
     if (iv_) {
         free(iv_);
     }
     EVP_CIPHER_CTX_free(this->ctx_);
     EVP_MD_CTX_free(this->mdCtx_);
+    fprintf(stderr, "CryptoTool: Destory the object.\n");
     fprintf(stderr, "-------CryptoTool Result-----------------\n");
     fprintf(stderr, "Encrypt Data Size: %lu\n", this->encDataSize_);
     fprintf(stderr, "Decryption Data Size: %lu\n", this->decDataSize_);
     fprintf(stderr, "Hash Data Size: %lu\n", this->hashDataSize_);
     fprintf(stderr, "-----------------------------------------\n");
-    
 }
 
 /**

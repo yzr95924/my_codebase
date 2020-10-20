@@ -29,7 +29,6 @@ private:
     uint8_t* waitingForChunkingBuffer_;
     uint8_t* chunkBuffer_;
     uint64_t readSize_;
-    uint64_t totalSize_;
     Data_t fileRecipe_;
     std::ifstream chunkingFile_;
 
