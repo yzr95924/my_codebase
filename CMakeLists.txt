@@ -4,7 +4,7 @@ project(MyProject)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_VERBOSE_MAKEFILE TRUE)
 set(CMAKE_MODULE_PATH /usr/share/cmake-3.10/Modules/)
-list(APPEND CMAKE_MODULE_PATH ${BasicDedup_SOURCE_DIR}/cmake)
+list(APPEND CMAKE_MODULE_PATH ${MyProject_SOURCE_DIR}/cmake)
 message(STATUS "CMAKE MODULE Path: ${CMAKE_MODULE_PATH}")
 
 
