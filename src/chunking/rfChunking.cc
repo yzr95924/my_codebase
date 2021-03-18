@@ -109,7 +109,6 @@ void RFChunking::LoadChunkFile(std::string path) {
  * 
  */
 void RFChunking::VarSizeChunking() {
-    double totalTime = 0;
     uint16_t winFp;
     uint64_t chunkBufferCnt = 0, chunkIDCnt = 0;
     ifstream& fin = GetChunkingFile();

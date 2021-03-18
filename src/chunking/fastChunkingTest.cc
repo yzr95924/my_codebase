@@ -114,7 +114,6 @@ void FastCDC::LoadChunkFile(std::string path) {
  * 
  */
 void FastCDC::Chunking() {
-    double totalTime = 0;
     ifstream& fin = GetChunkingFile();
     uint64_t fileSize = 0;
     uint64_t chunkIDCnt = 0;

@@ -96,7 +96,6 @@ FixChunking::~FixChunking() {
  * 
  */
 void FixChunking::FixSizeChunking() {
-    double totalTime = 0;
     std::ifstream& fin = GetChunkingFile();
     uint64_t chunkIDCnt = 0;
     memset(chunkBuffer_, 0, sizeof(int8_t) * avgChunkSize_);

@@ -69,21 +69,33 @@ int main(int argc, char* argv[]) {
     fprintf(stderr, "avg chunk size: %d\n", avgChunkSize);
     fprintf(stderr, "--------------------------\n");
 
-    if (type == RF_CHUNKING) {
-        unique_ptr<RFChunking> chunker(new RFChunking(filePath, minChunkSize, 
-            maxChunkSize, avgChunkSize));
-        chunker->Chunking();
-    } else if (type == FIX_CHUNKING) {
-        unique_ptr<FixChunking> chunker(new FixChunking(filePath, minChunkSize,
-            maxChunkSize, avgChunkSize));
-        chunker->Chunking();
-    } else if (type == FASTCDC_CHUNKING) {
-        unique_ptr<FastCDC> chunker(new FastCDC(filePath, minChunkSize,
-            maxChunkSize, avgChunkSize));
-        chunker->Chunking();
-    }else {
-        fprintf(stderr, "Error: wrong chunking algorithm type.\n");
+    switch (type) {
+        case CHUNKER_VAR_SIZE_TYPE: {
+            RFChunking* rfChunker = new RFChunking(filePath, minChunkSize,
+                maxChunkSize, avgChunkSize);
+            rfChunker->Chunking();
+            delete rfChunker;
+            break;
+        }
+        case CHUNKER_FIX_SIZE_TYPE: {
+            FixChunking* fixChunker = new FixChunking(filePath, minChunkSize,
+                maxChunkSize, avgChunkSize);
+            fixChunker->Chunking();
+            delete fixChunker;
+            break;
+        }
+        case FAST_CDC: {
+            FastCDC* fastCDCChunker = new FastCDC(filePath, minChunkSize, 
+                maxChunkSize, avgChunkSize);
+            fastCDCChunker->Chunking();
+            delete fastCDCChunker;
+            break;
+        }
+        default: {
+            fprintf(stderr, "chunkerBench: wrong chunker type: %d\n", type);
+            break;
+        }
     }
-    
+
     return 0;
 }

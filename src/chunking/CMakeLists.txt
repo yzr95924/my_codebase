@@ -1,4 +1,3 @@
-add_library(rfChunking STATIC rfChunking.cc)
-add_library(fixChunking STATIC fixChunking.cc)
-add_library(fastChunking STATIC fastChunking.cc)
-add_library(fastCDCTest STATIC fastChunkingTest.cc)
+aux_source_directory(. CHUNKING_SRC)
+
+add_library(chunkingLib ${CHUNKING_SRC})

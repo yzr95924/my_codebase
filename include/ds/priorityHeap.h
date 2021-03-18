@@ -27,6 +27,7 @@ public:
   void update(K key, P priority); // update the priority of an element
   bool contains(K key) const; // check if the heap contains an element
   P get_priority(K key) const; // get the priority of an element
+  void set_heap_size(size_t heapSize) { this->heap.reserve(heapSize);}
 
 private:
   class PriorityEntry {

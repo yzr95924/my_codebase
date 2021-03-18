@@ -38,3 +38,9 @@ uint32_t tool::DivCeil(uint32_t a, uint32_t b) {
     }
 }
 
+void tool::PrintBinaryArray(const uint8_t* fp, size_t fpSize) {
+    for (size_t i = 0; i < fpSize; i++) {
+        fprintf(stdout, "%02x", fp[i]);
+    }
+    fprintf(stdout, "\n");
+}
