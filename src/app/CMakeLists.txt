@@ -12,3 +12,9 @@ target_link_libraries(compressTest ${FINAL_OBJ})
 
 add_executable(heapTest heapTest.cc)
 target_link_libraries(heapTest ${FINAL_OBJ})
+
+add_executable(client client.cc)
+target_link_libraries(client ${FINAL_OBJ})
+
+add_executable(server server.cc)
+target_link_libraries(server ${FINAL_OBJ})

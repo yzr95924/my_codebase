@@ -32,7 +32,7 @@ set(FINAL_OBJ ${OUTSIDE_OBJ} ${INSIDE_OBJ})
 
 set(CMAKE_C_FLAGS_DEBUG "-Wall -g -ggdb -g2") 
 set(CMAKE_C_FLAGS_RELEASE "-O3 -Wall -DNDEBUG")
-set(CMAKE_CXX_FLAGS_DEBUG "-Wall -g -ggdb -g2 -fsanitize=leak -fno-omit-frame-pointer")
+set(CMAKE_CXX_FLAGS_DEBUG "-Wall -g -ggdb -g2 -fsanitize=address -O1 -fno-omit-frame-pointer")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -Wall -DNDEBUG")
 
 SET (CMAKE_C_COMPILER "/usr/bin/clang")
