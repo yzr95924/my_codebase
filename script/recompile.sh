@@ -8,4 +8,4 @@ cd ..
 cd ./bin
 mkdir Containers Recipes input output Meta
 cd ..
-cp config.json ./bin
+#cp config.json ./bin
