@@ -40,6 +40,8 @@ class CryptoTool {
         uint64_t encDataSize_;
         uint64_t decDataSize_;
         uint64_t hashDataSize_; 
+
+        EVP_PKEY* pKey_;
     public:
         /**
          * @brief Construct a new Crypto Tool object
@@ -65,6 +67,17 @@ class CryptoTool {
          * @return false fail
          */
         bool GenerateHash(uint8_t* inputData, const int dataSize, uint8_t* hash);
+
+        /**
+         * @brief Generate the HMAC of the input data
+         * 
+         * @param inputData input data buffer
+         * @param dataSize input data size
+         * @param hMAC the output HMAC
+         * @return true success
+         * @return false fail
+         */
+        bool GenerateHMAC(uint8_t* inputData, const int dataSize, uint8_t* hMAC);
 
         /**
          * @brief Encrypt the data with the encryption key

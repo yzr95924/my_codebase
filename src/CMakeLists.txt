@@ -1,5 +1,5 @@
-set(CMAKE_BUILD_TYPE "Release")
-#set(CMAKE_BUILD_TYPE "Debug")
+#set(CMAKE_BUILD_TYPE "Release")
+set(CMAKE_BUILD_TYPE "Debug")
 find_package(Boost 1.36.0 REQUIRED COMPONENTS thread system serialization)
 find_package(OpenSSL REQUIRED)
 
@@ -23,7 +23,7 @@ include_directories(../include)
 link_directories(../lib)
 
 
-set(BOOST_LIB_OBJ boost_thread boost_system boost_serialization)
+set(BOOST_LIB_OBJ boost_thread boost_system boost_serialization tcmalloc)
 set(SYSTEM_LIB_OBJ pthread lz4)
 set(OPENSSL_OBJ ssl crypto)
 set(OUTSIDE_OBJ ${SYSTEM_LIB_OBJ} ${BOOST_LIB_OBJ} ${OPENSSL_OBJ})

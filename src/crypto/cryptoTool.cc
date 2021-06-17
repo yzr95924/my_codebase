@@ -40,6 +40,8 @@ CryptoTool::CryptoTool(int cipherType, int hashType) {
         exit(EXIT_FAILURE);
     }
 
+    pKey_ = EVP_PKEY_new();
+
     encDataSize_ = 0;
     decDataSize_ = 0;
     hashDataSize_ = 0;
@@ -57,16 +59,15 @@ CryptoTool::CryptoTool(int cipherType, int hashType) {
  * 
  */
 CryptoTool::~CryptoTool() {
-    if (iv_) {
-        free(iv_);
-    }
-    EVP_CIPHER_CTX_free(this->ctx_);
-    EVP_MD_CTX_free(this->mdCtx_);
+    free(iv_);
+    free(pKey_);
+    EVP_CIPHER_CTX_free(ctx_);
+    EVP_MD_CTX_free(mdCtx_);
     fprintf(stderr, "CryptoTool: Destory the object.\n");
     fprintf(stderr, "-------CryptoTool Result-----------------\n");
-    fprintf(stderr, "Encrypt Data Size: %lu\n", this->encDataSize_);
-    fprintf(stderr, "Decryption Data Size: %lu\n", this->decDataSize_);
-    fprintf(stderr, "Hash Data Size: %lu\n", this->hashDataSize_);
+    fprintf(stderr, "Encrypt Data Size: %lu\n", encDataSize_);
+    fprintf(stderr, "Decryption Data Size: %lu\n", decDataSize_);
+    fprintf(stderr, "Hash Data Size: %lu\n", hashDataSize_);
     fprintf(stderr, "-----------------------------------------\n");
 }
 
@@ -86,72 +87,72 @@ bool CryptoTool::EncryptWithKey(uint8_t* inputData, const int dataSize, uint8_t*
 
     switch (cipherType_) {
         case AES_128_CFB: 
-            if (!EVP_EncryptInit_ex(this->ctx_, EVP_aes_128_cfb(), NULL,
-                key, this->iv_)) {
+            if (!EVP_EncryptInit_ex(ctx_, EVP_aes_128_cfb(), NULL,
+                key, iv_)) {
                 fprintf(stderr, "CryptoTool: Init error.\n");
-                EVP_CIPHER_CTX_reset(this->ctx_);
+                EVP_CIPHER_CTX_reset(ctx_);
                 return false;
             }
             break;
         case AES_256_CFB:
-            if (!EVP_EncryptInit_ex(this->ctx_, EVP_aes_256_cfb(), NULL,
-                key, this->iv_)) {
+            if (!EVP_EncryptInit_ex(ctx_, EVP_aes_256_cfb(), NULL,
+                key, iv_)) {
                 fprintf(stderr, "CryptoTool: Init error.\n");
-                EVP_CIPHER_CTX_reset(this->ctx_);
+                EVP_CIPHER_CTX_reset(ctx_);
                 return false;
             }
             break;
         case AES_256_GCM:
-            EVP_EncryptInit_ex(this->ctx_, EVP_aes_256_gcm(), NULL, NULL, NULL);
-            EVP_CIPHER_CTX_ctrl(this->ctx_, EVP_CTRL_AEAD_SET_IVLEN, CRYPTO_BLOCK_SIZE, NULL);
-            if (!EVP_EncryptInit_ex(this->ctx_, NULL, NULL,
-                key, this->iv_)) {
+            EVP_EncryptInit_ex(ctx_, EVP_aes_256_gcm(), NULL, NULL, NULL);
+            EVP_CIPHER_CTX_ctrl(ctx_, EVP_CTRL_AEAD_SET_IVLEN, CRYPTO_BLOCK_SIZE, NULL);
+            if (!EVP_EncryptInit_ex(ctx_, NULL, NULL,
+                key, iv_)) {
                 fprintf(stderr, "CryptoTool: Init error.\n");
-                EVP_CIPHER_CTX_reset(this->ctx_);
+                EVP_CIPHER_CTX_reset(ctx_);
                 return false;
             }
-            EVP_EncryptUpdate(this->ctx_, NULL, &cipherLen, gcm_aad, sizeof(gcm_aad));
+            EVP_EncryptUpdate(ctx_, NULL, &cipherLen, gcm_aad, sizeof(gcm_aad));
             break;
         case AES_128_GCM:
-            EVP_EncryptInit_ex(this->ctx_, EVP_aes_128_gcm(), NULL, NULL, NULL);
-            EVP_CIPHER_CTX_ctrl(this->ctx_, EVP_CTRL_AEAD_SET_IVLEN, CRYPTO_BLOCK_SIZE, NULL);
-            if (!EVP_EncryptInit_ex(this->ctx_, NULL, NULL,
-                key, this->iv_)) {
+            EVP_EncryptInit_ex(ctx_, EVP_aes_128_gcm(), NULL, NULL, NULL);
+            EVP_CIPHER_CTX_ctrl(ctx_, EVP_CTRL_AEAD_SET_IVLEN, CRYPTO_BLOCK_SIZE, NULL);
+            if (!EVP_EncryptInit_ex(ctx_, NULL, NULL,
+                key, iv_)) {
                 fprintf(stderr, "CryptoTool: Init error.\n");
-                EVP_CIPHER_CTX_reset(this->ctx_);
+                EVP_CIPHER_CTX_reset(ctx_);
                 return false;
             }
-            EVP_EncryptUpdate(this->ctx_, NULL, &cipherLen, gcm_aad, sizeof(gcm_aad));
+            EVP_EncryptUpdate(ctx_, NULL, &cipherLen, gcm_aad, sizeof(gcm_aad));
             break;
     }
 
     // encrypt the plaintext
 
-    if (!EVP_EncryptUpdate(this->ctx_, cipherText, &cipherLen, inputData, 
+    if (!EVP_EncryptUpdate(ctx_, cipherText, &cipherLen, inputData, 
         dataSize)) {
         fprintf(stderr, "CryptoTool: Encryption error.\n");
-        EVP_CIPHER_CTX_reset(this->ctx_);
+        EVP_CIPHER_CTX_reset(ctx_);
         return false;
     }
 
-    // if (!EVP_EncryptFinal_ex(this->ctx_, cipherText + cipherLen, &len)) {
+    // if (!EVP_EncryptFinal_ex(ctx_, cipherText + cipherLen, &len)) {
     //     fprintf(stderr, "CryptoTool: Encryption error.\n");
-    //     EVP_CIPHER_CTX_reset(this->ctx_);
+    //     EVP_CIPHER_CTX_reset(ctx_);
     //     return false;
     // }
 
-    EVP_EncryptFinal_ex(this->ctx_, cipherText + cipherLen, &len);
+    EVP_EncryptFinal_ex(ctx_, cipherText + cipherLen, &len);
 
     cipherLen += len;
     encDataSize_ += cipherLen;
 	
     if (cipherLen != dataSize) {
-        EVP_CIPHER_CTX_reset(this->ctx_);
+        EVP_CIPHER_CTX_reset(ctx_);
         fprintf(stderr, "CryptoTool: encryption output size not equal to origin size.\n");
         return false;
     }
 
-    EVP_CIPHER_CTX_reset(this->ctx_);
+    EVP_CIPHER_CTX_reset(ctx_);
     return true;
 }
 
@@ -171,72 +172,72 @@ bool CryptoTool::DecryptWithKey(uint8_t* cipherText, const int dataSize, uint8_t
     int len;
     switch (cipherType_) {
         case AES_128_CFB:
-            if (!EVP_DecryptInit_ex(this->ctx_, EVP_aes_128_cfb(), NULL, 
+            if (!EVP_DecryptInit_ex(ctx_, EVP_aes_128_cfb(), NULL, 
                 key, iv_)) {
                 fprintf(stderr, "CryptoTool: Init error.\n");
-                EVP_CIPHER_CTX_reset(this->ctx_);
+                EVP_CIPHER_CTX_reset(ctx_);
                 return false;
             }
             break;
         case AES_256_CFB:
-            if (!EVP_DecryptInit_ex(this->ctx_, EVP_aes_256_cfb(), NULL,
+            if (!EVP_DecryptInit_ex(ctx_, EVP_aes_256_cfb(), NULL,
                 key, iv_)) {
                 fprintf(stderr, "CryptoTool: Init error.\n");
-                EVP_CIPHER_CTX_reset(this->ctx_);
+                EVP_CIPHER_CTX_reset(ctx_);
                 return false;
             }
             break;
         case AES_128_GCM:
-            EVP_DecryptInit_ex(this->ctx_, EVP_aes_128_gcm(), NULL, NULL, NULL);
-            EVP_CIPHER_CTX_ctrl(this->ctx_, EVP_CTRL_AEAD_SET_IVLEN, CRYPTO_BLOCK_SIZE, NULL);
-            if (!EVP_DecryptInit_ex(this->ctx_, NULL, NULL,
+            EVP_DecryptInit_ex(ctx_, EVP_aes_128_gcm(), NULL, NULL, NULL);
+            EVP_CIPHER_CTX_ctrl(ctx_, EVP_CTRL_AEAD_SET_IVLEN, CRYPTO_BLOCK_SIZE, NULL);
+            if (!EVP_DecryptInit_ex(ctx_, NULL, NULL,
                 key, iv_)) {
                 fprintf(stderr, "CryptoTool: Init error.\n");
-                EVP_CIPHER_CTX_reset(this->ctx_);
+                EVP_CIPHER_CTX_reset(ctx_);
                 return false;
             }
-            EVP_DecryptUpdate(this->ctx_, NULL, &plainLen, gcm_aad, sizeof(gcm_aad));
+            EVP_DecryptUpdate(ctx_, NULL, &plainLen, gcm_aad, sizeof(gcm_aad));
             break;
         case AES_256_GCM:
-            EVP_DecryptInit_ex(this->ctx_, EVP_aes_256_gcm(), NULL, NULL, NULL);
-            EVP_CIPHER_CTX_ctrl(this->ctx_, EVP_CTRL_AEAD_SET_IVLEN, CRYPTO_BLOCK_SIZE, NULL);
-            if (!EVP_DecryptInit_ex(this->ctx_, NULL, NULL,
+            EVP_DecryptInit_ex(ctx_, EVP_aes_256_gcm(), NULL, NULL, NULL);
+            EVP_CIPHER_CTX_ctrl(ctx_, EVP_CTRL_AEAD_SET_IVLEN, CRYPTO_BLOCK_SIZE, NULL);
+            if (!EVP_DecryptInit_ex(ctx_, NULL, NULL,
                 key, iv_)) {
                 fprintf(stderr, "CryptoTool: Init error.\n");
-                EVP_CIPHER_CTX_reset(this->ctx_);
+                EVP_CIPHER_CTX_reset(ctx_);
                 return false;
             }
-            EVP_DecryptUpdate(this->ctx_, NULL, &plainLen, gcm_aad, sizeof(gcm_aad));
+            EVP_DecryptUpdate(ctx_, NULL, &plainLen, gcm_aad, sizeof(gcm_aad));
             break;
     }
 
     // decrypt the plaintext
     
-    if (!EVP_DecryptUpdate(this->ctx_, dataBuffer, &plainLen, cipherText, 
+    if (!EVP_DecryptUpdate(ctx_, dataBuffer, &plainLen, cipherText, 
         dataSize)) {
         fprintf(stderr, "CryptoTool: Decrypt error.\n");
-        EVP_CIPHER_CTX_reset(this->ctx_);
+        EVP_CIPHER_CTX_reset(ctx_);
         return false;
     }
 
-    // if (!EVP_DecryptFinal_ex(this->ctx_, dataBuffer + plainLen, &len)) {
+    // if (!EVP_DecryptFinal_ex(ctx_, dataBuffer + plainLen, &len)) {
     //     fprintf(stderr, "CryptoTool: Decrypt error.\n");
-    //     EVP_CIPHER_CTX_reset(this->ctx_);
+    //     EVP_CIPHER_CTX_reset(ctx_);
     //     return false;
     // }
 
-    EVP_DecryptFinal_ex(this->ctx_, dataBuffer + plainLen, &len);
+    EVP_DecryptFinal_ex(ctx_, dataBuffer + plainLen, &len);
     
     plainLen += len;
     decDataSize_ += plainLen;
 
     if (plainLen != dataSize) {
-        EVP_CIPHER_CTX_reset(this->ctx_);
+        EVP_CIPHER_CTX_reset(ctx_);
         fprintf(stderr, "CryptoTool: Decrypt output size not equal to origin size.\n");
         return false;
     }
 
-    EVP_CIPHER_CTX_reset(this->ctx_);
+    EVP_CIPHER_CTX_reset(ctx_);
     return true;
 }
 
