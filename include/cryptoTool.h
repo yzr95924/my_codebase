@@ -12,6 +12,7 @@
 #define CRYPTO_TOOL_H
 #include <openssl/evp.h>
 #include <openssl/crypto.h>
+#include <openssl/err.h>
 #include "define.h"
 #include "dataStructure.h"
 #include "configure.h" 
@@ -74,10 +75,8 @@ class CryptoTool {
          * @param inputData input data buffer
          * @param dataSize input data size
          * @param hMAC the output HMAC
-         * @return true success
-         * @return false fail
          */
-        bool GenerateHMAC(uint8_t* inputData, const int dataSize, uint8_t* hMAC);
+        void GenerateHMAC(uint8_t* inputData, const int dataSize, uint8_t* hMAC);
 
         /**
          * @brief Encrypt the data with the encryption key

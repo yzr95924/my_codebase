@@ -40,7 +40,8 @@ CryptoTool::CryptoTool(int cipherType, int hashType) {
         exit(EXIT_FAILURE);
     }
 
-    pKey_ = EVP_PKEY_new();
+    const uint8_t deriveStr[] = "password";
+    pKey_ = EVP_PKEY_new_raw_private_key(EVP_PKEY_HMAC, NULL, deriveStr, strlen((char*)deriveStr));
 
     encDataSize_ = 0;
     decDataSize_ = 0;
@@ -60,7 +61,7 @@ CryptoTool::CryptoTool(int cipherType, int hashType) {
  */
 CryptoTool::~CryptoTool() {
     free(iv_);
-    free(pKey_);
+    EVP_PKEY_free(pKey_);
     EVP_CIPHER_CTX_free(ctx_);
     EVP_MD_CTX_free(mdCtx_);
     fprintf(stderr, "CryptoTool: Destory the object.\n");
@@ -254,49 +255,105 @@ bool CryptoTool::GenerateHash(uint8_t* dataBuffer, const int dataSize, uint8_t* 
     int expectedHashSize = 0;
     switch (hashType_) {
         case SHA_1:
-            if (!EVP_DigestInit_ex(this->mdCtx_, EVP_sha1(), NULL)) {
+            if (!EVP_DigestInit_ex(mdCtx_, EVP_sha1(), NULL)) {
                 fprintf(stderr, "CryptoTool: Hash init error.\n");
-                EVP_MD_CTX_reset(this->mdCtx_);
+                EVP_MD_CTX_reset(mdCtx_);
                 return false;
             }
             expectedHashSize = 20;
             break;
         case SHA_256:
-            if (!EVP_DigestInit_ex(this->mdCtx_, EVP_sha256(), NULL)) {
+            if (!EVP_DigestInit_ex(mdCtx_, EVP_sha256(), NULL)) {
                 fprintf(stderr, "CryptoTool: Hash init error.\n");
-                EVP_MD_CTX_reset(this->mdCtx_);
+                EVP_MD_CTX_reset(mdCtx_);
                 return false; 
             }
             expectedHashSize = 32;
             break;
         case MD5:
-            if (!EVP_DigestInit_ex(this->mdCtx_, EVP_md5(), NULL)) {
+            if (!EVP_DigestInit_ex(mdCtx_, EVP_md5(), NULL)) {
                 fprintf(stderr, "CryptoTool: Hash init error.\n");
-                EVP_MD_CTX_reset(this->mdCtx_);
+                EVP_MD_CTX_reset(mdCtx_);
                 return false;
             }
             expectedHashSize = 16;
             break;
     }
-    if (!EVP_DigestUpdate(this->mdCtx_, dataBuffer, dataSize)) {
+    if (!EVP_DigestUpdate(mdCtx_, dataBuffer, dataSize)) {
         fprintf(stderr, "CryptoTool: Hash error.\n");
-        EVP_MD_CTX_reset(this->mdCtx_);
+        EVP_MD_CTX_reset(mdCtx_);
         return false;
     }
     uint32_t hashSize;
-    if (!EVP_DigestFinal_ex(this->mdCtx_, hash, &hashSize)) {
+    if (!EVP_DigestFinal_ex(mdCtx_, hash, &hashSize)) {
         fprintf(stderr, "CryptoTool: Hash error.\n");
-        EVP_MD_CTX_reset(this->mdCtx_);
+        EVP_MD_CTX_reset(mdCtx_);
         return false;
     }
 
     if (hashSize != expectedHashSize) {
         fprintf(stderr, "CryptoTool: Hash size error.\n");
-        EVP_MD_CTX_reset(this->mdCtx_);
+        EVP_MD_CTX_reset(mdCtx_);
         return false;
     }
     
     hashDataSize_ += dataSize;
-    EVP_MD_CTX_reset(this->mdCtx_);
+    EVP_MD_CTX_reset(mdCtx_);
     return true;
+}
+
+/**
+ * @brief Generate the HMAC of the input data
+ * 
+ * @param inputData input data buffer
+ * @param dataSize input data size
+ * @param hMAC the output HMAC
+ */
+void CryptoTool::GenerateHMAC(uint8_t* inputData, const int dataSize, uint8_t* hMAC) {
+    int expectedHashSize = 0;
+    switch (hashType_) {
+        case SHA_1:
+            if (EVP_DigestSignInit(mdCtx_, NULL, EVP_sha1(), NULL, pKey_) != 1) {
+                fprintf(stderr, "CryptoTool: HMAC init error, error 0x%lx\n", ERR_get_error());
+                exit(EXIT_FAILURE);
+            }
+            expectedHashSize = 20;
+            break;
+        case SHA_256:
+            if (EVP_DigestSignInit(mdCtx_, NULL, EVP_sha256(), NULL, pKey_) != 1) {
+                fprintf(stderr, "CryptoTool: HMAC init error, error 0x%lx\n", ERR_get_error());
+                exit(EXIT_FAILURE);
+            }
+            expectedHashSize = 32;
+            break;
+        case MD5:
+            if (EVP_DigestSignInit(mdCtx_, NULL, EVP_md5(), NULL, pKey_) != 1) {
+                fprintf(stderr, "CryptoTool: HMAC init error, error 0x%lx\n", ERR_get_error());
+                exit(EXIT_FAILURE);
+            }
+            expectedHashSize = 16;
+            break;
+    }
+
+    if (EVP_DigestSignUpdate(mdCtx_, inputData, dataSize) != 1) {
+        fprintf(stderr, "CryptoTool: HMAC update error, error 0x%lx\n", ERR_get_error());
+        exit(EXIT_FAILURE);
+    }
+
+    // first call the buffer should be NULL, and receive the size of the signature
+    size_t sigLen = CHUNK_HASH_SIZE;
+    if (EVP_DigestSignFinal(mdCtx_, hMAC, &sigLen) != 1) {
+        fprintf(stderr, "CryptoTool: HMAC final error, error 0x%lx\n", ERR_get_error());
+        exit(EXIT_FAILURE);
+    }
+
+    if (sigLen != expectedHashSize) {
+        fprintf(stderr, "CryptoTool: HMAC sig len cannot match the expected size.\n");
+        exit(EXIT_FAILURE);
+    }
+
+    hashDataSize_ += dataSize;
+    EVP_MD_CTX_reset(mdCtx_);
+
+    return ;
 }

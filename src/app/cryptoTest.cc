@@ -112,7 +112,7 @@ int main(int argc, char* argv[]) {
     }
     inputFile.close();
     outputFile.close();
-    fprintf(stderr, "Decrytion Done!.\n");
+    fprintf(stderr, "Decryption Done!.\n");
     fprintf(stderr, "Decryption throughput (MB/s): %.4lf\n", (cipher->GetDecDataSize()) / 1024.0 / 1024.0 / decTime);
 
     inputFile.open(path, std::ios::in | std::ios::binary);
