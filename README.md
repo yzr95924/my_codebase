@@ -1,3 +1,3 @@
-# My-Codebase
+# My_Codebase
 
-Record the useful code for different functionalities
+Some useful code building blocks for different functionalities
