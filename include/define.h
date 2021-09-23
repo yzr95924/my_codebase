@@ -27,6 +27,7 @@
 #include <string>
 #include <list>
 #include <locale>
+#include <iomanip>
 
 static const uint64_t GB_2_B = 1000 * 1000 * 1000;
 static const uint64_t GiB_2_B = uint64_t(1) << 30;
@@ -45,7 +46,13 @@ namespace tool {
      * @param end_time end time
      * @return double the diff time (sec)
      */
-    double GetTimeDiff(struct timeval start_time, struct timeval end_time);
+    inline double GetTimeDiff(struct timeval start_time, struct timeval end_time) {
+        double second;
+        second = (end_time.tv_sec - start_time.tv_sec) * static_cast<double>(SEC_2_US) + 
+            end_time.tv_usec - start_time.tv_usec;
+        second = second / static_cast<double>(SEC_2_US);
+        return second; 
+    }
     
     /**
      * @brief compare the limits with the input
@@ -55,7 +62,15 @@ namespace tool {
      * @param upper the upper bound of the limitation
      * @return uint32_t 
      */
-    uint32_t CompareLimit(uint32_t input, uint32_t lower, uint32_t upper);
+    inline uint32_t CompareLimit(uint32_t input, uint32_t lower, uint32_t upper) {
+        if (input <= lower) {
+            return lower; 
+        } else if (input >= upper) {
+            return upper;
+        } else {
+            return input;
+        }    
+    }
     
     /**
      * @brief get the ceil of the division
@@ -64,7 +79,14 @@ namespace tool {
      * @param b 
      * @return uint32_t 
      */
-    uint32_t DivCeil(uint32_t a, uint32_t b);
+    inline uint32_t DivCeil(uint32_t a, uint32_t b) {
+        uint32_t tmp = a / b;
+        if (a % b == 0) {
+            return tmp;
+        } else {
+            return (tmp + 1);
+        }
+    }
     
     /**
      * @brief print the binary buffer
@@ -72,7 +94,13 @@ namespace tool {
      * @param fp the pointer to the buffer
      * @param fp_size the size of the buffer
      */
-    void PrintBinaryArray(const uint8_t* buffer, size_t buffer_size);
+    inline void PrintBinaryArray(const uint8_t* buffer, size_t buffer_size) {
+        for (size_t i = 0; i < buffer_size; i++) {
+            fprintf(stderr, "%02x", buffer[i]);
+        }
+        fprintf(stderr, "\n");
+        return ;
+    }
     
     /**
      * @brief a simple logger
@@ -80,7 +108,17 @@ namespace tool {
      * @param logger the logger name
      * @param fmt the input message
      */
-    void Logging(const char* logger, const char* fmt, ...);
+    inline void Logging(const char* logger, const char* fmt, ...) {
+        using namespace std;
+        char buf[BUFSIZ] = {'\0'};
+        va_list ap;
+        va_start(ap, fmt);
+        vsnprintf(buf, BUFSIZ, fmt, ap);
+        va_end(ap);
+        time_t t = std::time(nullptr);
+        std::cerr << std::put_time(std::localtime(&t), "%F %T ") << logger << ":" << buf;
+        return ;
+    }
 
 } // namespace tool
 #endif 
