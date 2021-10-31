@@ -20,8 +20,6 @@ using namespace std;
 
 class BoostAsioTutor {
     private:
-        // need to have at least one io_service obj, access to I/O functionality
-        boost::asio::io_service io_; 
 
     public:
         /**
