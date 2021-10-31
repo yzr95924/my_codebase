@@ -28,13 +28,8 @@
 #include <list>
 #include <locale>
 #include <iomanip>
-<<<<<<< HEAD
-#include <stack>
-=======
->>>>>>> cc61dcdc3a1e4bb9cb47838b4bbc89a68b99a785
+#include <bits/stdc++.h>
 
-static const uint64_t GB_2_B = 1000 * 1000 * 1000;
-static const uint64_t GiB_2_B = uint64_t(1) << 30;
 static const uint64_t MB_2_B = 1000 * 1000;
 static const uint64_t MiB_2_B = uint64_t(1) << 20;
 static const uint64_t KB_2_B = 1000;
