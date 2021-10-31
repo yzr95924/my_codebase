@@ -52,4 +52,26 @@ private:
 // the header file
 #include "priorityHeap.tpp"
 
+// for example:
+// int main(int argc, char* argv[]) {
+//     PriorityHeap<std::string, int, std::less<int>> minHeap;
+//     minHeap.add("1st", 1);
+//     minHeap.add("2rd", 2);
+//     minHeap.add("3rd", 0);
+//     cout << "Key: " << minHeap.top_k() << endl;
+//     cout << "Freq: " << minHeap.top_p() << endl;
+
+//     // update
+//     minHeap.update("3rd", 4);
+//     cout << "Key: " << minHeap.top_k() << endl;
+//     cout << "Freq: " << minHeap.top_p() << endl;
+
+//     // pop the heap
+//     minHeap.pop();
+//     cout << "Key: " << minHeap.top_k() << endl;
+//     cout << "Freq: " << minHeap.top_p() << endl;
+
+//     return 0;
+// }
+
 #endif /* PRIORITY_HEAP_HDR */
