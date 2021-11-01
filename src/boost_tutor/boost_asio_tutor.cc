@@ -59,3 +59,24 @@ void BoostAsioTutor::AsyncTime() {
     io_ctx.run(); 
     return ;
 }
+
+/**
+ * @brief the async time with more parameters
+ * 
+ */
+void BoostAsioTutor::AsyncTimeWithMoreParameters() {
+    boost::asio::io_service io_ctx;
+    int count = 0;
+    boost::asio::deadline_timer t(io_ctx, boost::posix_time::seconds(1));
+    tool::Logging(class_name_.c_str(), "Wait start\n");
+    t.async_wait(boost::bind(&BoostAsioTutor::Print, this, 
+        boost::asio::placeholders::error, &t, &count));
+    tool::Logging(class_name_.c_str(), "Wait continue\n");
+    sleep(5);
+    
+    io_ctx.run();
+
+    tool::Logging(this->class_name_.c_str(), "Final count is %d\n", count);
+
+    return ;
+}

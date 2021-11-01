@@ -14,6 +14,6 @@
 int main(int argc, char* argv[])
 {
     BoostAsioTutor test;
-    test.AsyncTime();
+    test.AsyncTimeWithMoreParameters();
     return 0;
 }

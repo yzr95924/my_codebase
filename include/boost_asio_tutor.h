@@ -32,6 +32,25 @@ class BoostAsioTutor {
             return ;
         }
 
+        /**
+         * @brief 
+         * 
+         * @param t pointer to the timer
+         * @param count current counter stop the program when the timer fires for the sixth time
+         */
+        void Print(const boost::system::error_code& , 
+            boost:: asio::deadline_timer* t, int* count) {
+            if (*count < 5) {
+                tool::Logging(class_name_.c_str(), "%d\n", *count);
+                (*count)++;
+
+                t->expires_at(t->expires_at() + boost::posix_time::seconds(1));
+                t->async_wait(boost::bind(&BoostAsioTutor::Print, this, 
+                    boost::asio::placeholders::error, t, count));
+            }
+
+        }
+
     public:
         /**
          * @brief Construct a new Boost Asio Tutor object
@@ -56,6 +75,12 @@ class BoostAsioTutor {
          * 
          */
         void AsyncTime();
+
+        /**
+         * @brief the async time with more parameters
+         * 
+         */
+        void AsyncTimeWithMoreParameters();
 };
 
 #endif
