@@ -17,4 +17,4 @@ add_executable(server server.cc)
 target_link_libraries(server ${FINAL_OBJ})
 
 add_executable(main tmp_main.cc)
-target_link_libraries(main ${OUTSIDE_OBJ} boostTutorLib)
+target_link_libraries(main ${OUTSIDE_OBJ} ${LEARNING_OBJ})

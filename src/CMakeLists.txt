@@ -33,6 +33,7 @@ set(OPENSSL_OBJ ssl crypto)
 set(OUTSIDE_OBJ ${SYSTEM_LIB_OBJ} ${BOOST_LIB_OBJ} ${OPENSSL_OBJ})
 set(INSIDE_OBJ chunkingLib compressLib cryptoLib networkLib utilLib)
 set(FINAL_OBJ ${OUTSIDE_OBJ} ${INSIDE_OBJ})
+set(LEARNING_OBJ stdTutorLib boostTutorLib)
 
 set(CMAKE_C_FLAGS_DEBUG "-Wall -g -ggdb") 
 set(CMAKE_C_FLAGS_RELEASE "-O3 -Wall")
@@ -55,4 +56,7 @@ add_subdirectory(chunking)
 add_subdirectory(util)
 add_subdirectory(crypto)
 add_subdirectory(compression)
+
+# for learning
 add_subdirectory(boost_tutor)
+add_subdirectory(std_tutor)

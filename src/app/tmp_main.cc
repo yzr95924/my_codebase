@@ -9,11 +9,10 @@
  * 
  */
 
-#include "../../include/boost_asio_tutor.h"
+#include "../../include/std_learn/lambda_learn.h"
 
-int main(int argc, char* argv[])
-{
-    BoostAsioTutor test;
-    test.AsyncTimeWithMoreParameters();
+int main(int argc, char* argv[]) {
+    LambdaLearn test;
+    test.CaptureOutVar();
     return 0;
 }
