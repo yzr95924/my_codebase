@@ -14,12 +14,23 @@
 
 #include "define.h"
 #include <boost/asio.hpp> // the header for the asio classes
+#include <boost/bind.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 
 using namespace std;
 
 class BoostAsioTutor {
     private:
+        string class_name_ = "BoostAsioTutor";
+
+        /**
+         * @brief print current class name
+         * 
+         */
+        void PrintCurrentClassName(const boost::system::error_code& /*e*/) {
+            tool::Logging(class_name_.c_str(), "Test.\n");
+            return ;
+        }
 
     public:
         /**
@@ -35,10 +46,16 @@ class BoostAsioTutor {
         ~BoostAsioTutor();
 
         /**
-         * @brief the main process
+         * @brief the sync timer
          * 
          */
-        void Run();
+        void SyncTimer();
+
+        /**
+         * @brief the async timer
+         * 
+         */
+        void AsyncTime();
 };
 
 #endif

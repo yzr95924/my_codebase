@@ -32,7 +32,7 @@ BoostAsioTutor::~BoostAsioTutor() {
  * @brief the main process
  * 
  */
-void BoostAsioTutor::Run() {
+void BoostAsioTutor::SyncTimer() {
     // need to have at least one io_service obj, access to I/O functionality
     boost::asio::io_service io_ctx; 
     boost::asio::deadline_timer t(io_ctx, boost::posix_time::seconds(5));
@@ -41,5 +41,21 @@ void BoostAsioTutor::Run() {
     // will not return until the timer has expired, 5 seconds after it was created 
     t.wait(); // not from when the wait starts
     tool::Logging("BoostAsioTutor", "Wait return\n");
+    return ;
+}
+
+/**
+ * @brief the async timer
+ * 
+ */
+void BoostAsioTutor::AsyncTime() {
+    boost::asio::io_service io_ctx;
+    boost::asio::deadline_timer deadline(io_ctx, boost::posix_time::seconds(5));
+
+    tool::Logging(class_name_.c_str(), "Wait start\n");
+    // the callback handler
+    deadline.async_wait(boost::bind(&BoostAsioTutor::PrintCurrentClassName, this, boost::asio::placeholders::error));
+    tool::Logging(class_name_.c_str(), "Wait continue\n");
+    io_ctx.run(); 
     return ;
 }
