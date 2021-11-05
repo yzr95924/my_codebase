@@ -10,9 +10,10 @@
  */
 
 #include "../../include/std_learn/lambda_learn.h"
+#include "../../include/std_learn/multi_thread_learn.h"
 
 int main(int argc, char* argv[]) {
-    LambdaLearn test;
-    test.CaptureOutVar();
+    MultiThreadLearning test;
+    test.FutureTest();
     return 0;
 }
