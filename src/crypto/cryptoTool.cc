@@ -43,10 +43,6 @@ CryptoTool::CryptoTool(int cipherType, int hashType) {
     const uint8_t deriveStr[] = "password";
     pKey_ = EVP_PKEY_new_raw_private_key(EVP_PKEY_HMAC, NULL, deriveStr, strlen((char*)deriveStr));
 
-    encDataSize_ = 0;
-    decDataSize_ = 0;
-    hashDataSize_ = 0;
-    
     fprintf(stderr, "---------CryptoTool Configuration---------\n");
     fprintf(stderr, "openssl version: %s\n", OPENSSL_VERSION_TEXT);
     fprintf(stderr, "cipher type: %s\n", ENCRYPT_STRING[cipherType_].c_str());
@@ -66,9 +62,6 @@ CryptoTool::~CryptoTool() {
     EVP_MD_CTX_free(mdCtx_);
     fprintf(stderr, "CryptoTool: Destory the object.\n");
     fprintf(stderr, "-------CryptoTool Result-----------------\n");
-    fprintf(stderr, "Encrypt Data Size: %lu\n", encDataSize_);
-    fprintf(stderr, "Decryption Data Size: %lu\n", decDataSize_);
-    fprintf(stderr, "Hash Data Size: %lu\n", hashDataSize_);
     fprintf(stderr, "-----------------------------------------\n");
 }
 
@@ -145,8 +138,7 @@ bool CryptoTool::EncryptWithKey(uint8_t* inputData, const int dataSize, uint8_t*
     EVP_EncryptFinal_ex(ctx_, cipherText + cipherLen, &len);
 
     cipherLen += len;
-    encDataSize_ += cipherLen;
-	
+
     if (cipherLen != dataSize) {
         EVP_CIPHER_CTX_reset(ctx_);
         fprintf(stderr, "CryptoTool: encryption output size not equal to origin size.\n");
@@ -230,7 +222,6 @@ bool CryptoTool::DecryptWithKey(uint8_t* cipherText, const int dataSize, uint8_t
     EVP_DecryptFinal_ex(ctx_, dataBuffer + plainLen, &len);
     
     plainLen += len;
-    decDataSize_ += plainLen;
 
     if (plainLen != dataSize) {
         EVP_CIPHER_CTX_reset(ctx_);
@@ -297,7 +288,6 @@ bool CryptoTool::GenerateHash(uint8_t* dataBuffer, const int dataSize, uint8_t* 
         return false;
     }
     
-    hashDataSize_ += dataSize;
     EVP_MD_CTX_reset(mdCtx_);
     return true;
 }
@@ -352,7 +342,6 @@ void CryptoTool::GenerateHMAC(uint8_t* inputData, const int dataSize, uint8_t* h
         exit(EXIT_FAILURE);
     }
 
-    hashDataSize_ += dataSize;
     EVP_MD_CTX_reset(mdCtx_);
 
     return ;

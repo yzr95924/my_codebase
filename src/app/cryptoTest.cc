@@ -10,39 +10,25 @@
  */
 
 #include "../../include/cryptoTool.h"
-struct timeval startTime;
-struct timeval endTime;
+struct timeval start_time;
+struct timeval end_time;
+
+static const int64_t TEST_TIME = 1024 * 1024 * 16;
 
 void usage() {
-    fprintf(stderr, "cryptoBench [-e encryption type] [-h hash type]\n");
+    fprintf(stderr, "cryptoBench [-s message size (B)]\n");
+    return ;
 }
 
 int main(int argc, char* argv[]) {
-    const char* optstring = "e:h:f:o:s:";  
+    srand(time(NULL));
+    const char optstring[] = "s:";  
     int option;
-    int cryptoType;
-    int hashType;
-    string path;
-    string output;
-    int readBufferSize;
-    ifstream inputFile;
-    ofstream outputFile;
+    int64_t read_buffer_size;
     while ((option = getopt(argc, argv, optstring)) != -1) {
         switch (option) {
-            case 'e':
-                cryptoType = atoi(optarg);
-                break;
-            case 'h':
-                hashType = atoi(optarg);
-                break;
-            case 'f':
-                path = string(optarg);
-                break;
-            case 'o':
-                output = string(optarg);
-                break;
             case 's':
-                readBufferSize = atoi(optarg);
+                read_buffer_size = atoll(optarg);
                 break;
             case '?':
                 fprintf(stderr, "Error optopt: %c\n", optopt);
@@ -52,93 +38,69 @@ int main(int argc, char* argv[]) {
         }
     }
     
-    if (argc != 11) {
+    if (argc != sizeof(optstring)) {
         fprintf(stderr, "operator number wrong: %d != 6\n", argc);
         exit(EXIT_FAILURE);
     }
 
-
-    unique_ptr<CryptoTool> cipher(new CryptoTool(cryptoType, hashType));
-    inputFile.open(path, std::ios::in | std::ios::binary);
-    outputFile.open(output, std::ios::trunc | std::ios::binary);
-    if (!inputFile.is_open()) {
-        fprintf(stderr, "Cannot open this input file.\n");
-        exit(EXIT_FAILURE);
-    }
-    readBufferSize = readBufferSize * 1024;
+    CryptoTool* cipher = new CryptoTool(AES_256_GCM, SHA_256);
 
     uint8_t* key = (uint8_t*) malloc(sizeof(uint8_t) * 32);
-    memset(key, 0, sizeof(int8_t) * 32);
+    memset(key, 1, sizeof(int8_t) * 32);
     uint8_t hash[32];
-    uint8_t* readBuffer = (uint8_t*) malloc(readBufferSize);
-    uint8_t* outputBuffer = (uint8_t*) malloc(readBufferSize);
-    bool end = false;
-    double encTime = 0;
-    double decTime = 0;
-    double hashTime = 0;
-    fprintf(stderr, "Start Encryption.\n");
-    while (!end) {
-        inputFile.read((char*)readBuffer, readBufferSize);
-        int len = inputFile.gcount();
-        end = inputFile.eof();
-	    gettimeofday(&startTime, NULL);
-        cipher->EncryptWithKey(readBuffer, len, key, outputBuffer);
-	    gettimeofday(&endTime, NULL);
-	    encTime += tool::GetTimeDiff(startTime, endTime);
-        outputFile.write((char*)outputBuffer, len);
+    uint8_t* output_buffer = (uint8_t*) malloc(read_buffer_size);
+    uint8_t* input_buffer = (uint8_t*) malloc(read_buffer_size);
+    int* tmp_ptr = (int*)input_buffer;
+    for (int i = 0; i < (read_buffer_size / sizeof(int)); i++) {
+        *tmp_ptr = rand();
+        tmp_ptr++;
     }
-    inputFile.close();
-    outputFile.close();
-    fprintf(stderr, "Encryption Done!.\n");
-    fprintf(stderr, "Encryption throughput (MB/s): %.4lf\n", (cipher->GetEncDataSize()) / 1024.0 / 1024.0 / encTime);
+
+    double enc_time = 0;
+    double dec_time = 0;
+    double hash_time = 0;
+    double hmac_time = 0;
+    tool::Logging(__FILE__, "Start test.\n");
+    gettimeofday(&start_time, NULL);
+    for (int i = 0; i < TEST_TIME; i++) {
+        cipher->EncryptWithKey(input_buffer, read_buffer_size, key, output_buffer);
+    }
+    gettimeofday(&end_time, NULL);
+    enc_time += tool::GetTimeDiff(start_time, end_time);
+    tool::Logging(__FILE__, "Finish encryption test.\n");
+
+    gettimeofday(&start_time, NULL);
+    for (int i = 0; i < TEST_TIME; i++) {
+        cipher->GenerateHash(input_buffer, read_buffer_size, hash);
+    }
+    gettimeofday(&end_time, NULL);
+    hash_time += tool::GetTimeDiff(start_time, end_time);
+    tool::Logging(__FILE__, "Finish hashing test.\n");
+
+    gettimeofday(&start_time, NULL);
+    for (int i = 0; i < TEST_TIME; i++) {
+        cipher->DecryptWithKey(output_buffer, read_buffer_size, key, input_buffer); 
+    }
+    gettimeofday(&end_time, NULL);
+    dec_time += tool::GetTimeDiff(start_time, end_time);
+    tool::Logging(__FILE__, "Finish decryption test.\n");
+
+    gettimeofday(&start_time, NULL);
+    for (int i = 0; i < TEST_TIME; i++) {
+        cipher->GenerateHMAC(input_buffer, read_buffer_size, hash); 
+    }
+    gettimeofday(&end_time, NULL);
+    hmac_time += tool::GetTimeDiff(start_time, end_time);
+    tool::Logging(__FILE__, "Finish hmac test.\n");
+
+    tool::Logging(__FILE__, "Test done.\n");
+    tool::Logging(__FILE__, "Encryption (MiB/s): %.3lf\n", (read_buffer_size * TEST_TIME) / MiB_2_B / enc_time);
+    tool::Logging(__FILE__, "Hashing (MiB/s): %.3lf\n", (read_buffer_size * TEST_TIME) / MiB_2_B / hash_time);
+    tool::Logging(__FILE__, "Decryption (MiB/s): %.3lf\n", (read_buffer_size * TEST_TIME) / MiB_2_B / dec_time);
+    tool::Logging(__FILE__, "HMAC (MiB/s): %.3lf\n", (read_buffer_size * TEST_TIME) / MiB_2_B / hmac_time);
     
-    inputFile.open(output, std::ios::in | std::ios::binary);
-    outputFile.open(path, std::ios::trunc | std::ios::binary);
-    if (!inputFile.is_open()) {
-        fprintf(stderr, "Cannot open this input file.\n");
-        exit(EXIT_FAILURE);
-    }
-    end = false;
-    fprintf(stderr, "Start Decryption.\n");
-    while (!end) {
-        inputFile.read((char*)readBuffer, sizeof(uint8_t) * readBufferSize);
-        int len = inputFile.gcount();
-        end = inputFile.eof();
-	    gettimeofday(&startTime, NULL);
-        cipher->DecryptWithKey(readBuffer, len, key, outputBuffer);
-	    gettimeofday(&endTime, NULL);
-	    decTime += tool::GetTimeDiff(startTime, endTime);
-        outputFile.write((char*)outputBuffer, len);
-    }
-    inputFile.close();
-    outputFile.close();
-    fprintf(stderr, "Decryption Done!.\n");
-    fprintf(stderr, "Decryption throughput (MB/s): %.4lf\n", (cipher->GetDecDataSize()) / 1024.0 / 1024.0 / decTime);
-
-    inputFile.open(path, std::ios::in | std::ios::binary);
-    if (!inputFile.is_open()) {
-        fprintf(stderr, "Cannot open this input file.\n");
-        exit(EXIT_FAILURE);
-    }
-    end = false;
-    fprintf(stderr, "Start hash.\n");
-    while (!end) {
-        inputFile.read((char*)readBuffer, sizeof(uint8_t) * readBufferSize);
-        int len = inputFile.gcount();
-        end = inputFile.eof();
-	    gettimeofday(&startTime, NULL);
-        cipher->GenerateHash(readBuffer, len, hash);
-	    gettimeofday(&endTime, NULL);
-	    hashTime += tool::GetTimeDiff(startTime, endTime);
-    }
-    inputFile.close();
-    fprintf(stderr, "hash Done!.\n");
-    fprintf(stderr, "hash throughput (MB/s): %.4lf\n", (cipher->GetHashDataSize()) / 1024.0 / 1024.0 / hashTime);
-
-    free(readBuffer);
-    free(outputBuffer);
+    free(input_buffer);
+    free(output_buffer);
     free(key);
     return 0;
 }
-
-

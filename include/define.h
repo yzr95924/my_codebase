@@ -11,24 +11,10 @@
 #ifndef MY_DEFINE_H
 #define MY_DEFINE_H
 
-#include <iostream>
 #include <sys/time.h>
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <stdint.h>
-#include <fstream>
-#include <chrono>
-#include <unistd.h>
-#include <vector>
-#include <math.h>
-#include <algorithm>
-#include <memory>
-#include <string>
-#include <list>
-#include <locale>
 #include <iomanip>
 #include <bits/stdc++.h>
+#include <getopt.h>
 
 static const uint64_t MB_2_B = 1000 * 1000;
 static const uint64_t MiB_2_B = uint64_t(1) << 20;
