@@ -13,7 +13,7 @@
 struct timeval start_time;
 struct timeval end_time;
 
-static const int64_t TEST_TIME = 1024 * 1024 * 16;
+static const int64_t TEST_TIME = 1;
 
 void usage() {
     fprintf(stderr, "cryptoBench [-s message size (B)]\n");
@@ -43,7 +43,7 @@ int main(int argc, char* argv[]) {
         exit(EXIT_FAILURE);
     }
 
-    CryptoTool* cipher = new CryptoTool(AES_256_GCM, SHA_256);
+    CryptoTool* cipher = new CryptoTool(AES_256_CBC, SHA_256);
 
     uint8_t* key = (uint8_t*) malloc(sizeof(uint8_t) * 32);
     memset(key, 1, sizeof(int8_t) * 32);
@@ -102,5 +102,6 @@ int main(int argc, char* argv[]) {
     free(input_buffer);
     free(output_buffer);
     free(key);
+    delete cipher;
     return 0;
 }

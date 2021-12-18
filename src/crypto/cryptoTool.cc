@@ -118,6 +118,24 @@ bool CryptoTool::EncryptWithKey(uint8_t* inputData, const int dataSize, uint8_t*
             }
             EVP_EncryptUpdate(ctx_, NULL, &cipherLen, gcm_aad, sizeof(gcm_aad));
             break;
+        case AES_256_CBC:
+            if (!EVP_EncryptInit_ex(ctx_, EVP_aes_256_cbc(), NULL, key, 
+                iv_)) {
+                fprintf(stderr, "CryptoTool: Init error.\n");
+                EVP_CIPHER_CTX_reset(ctx_);
+                return false;
+            }
+            EVP_CIPHER_CTX_set_padding(ctx_, 0);
+            break;
+        case AES_128_CBC:
+            if (!EVP_EncryptInit_ex(ctx_, EVP_aes_128_cbc(), NULL, key,
+                iv_)) {
+                fprintf(stderr, "CryptoTool: Init error.\n");
+                EVP_CIPHER_CTX_reset(ctx_);
+                return false;
+            }
+            EVP_CIPHER_CTX_set_padding(ctx_, 0);
+            break;
     }
 
     // encrypt the plaintext
@@ -201,6 +219,24 @@ bool CryptoTool::DecryptWithKey(uint8_t* cipherText, const int dataSize, uint8_t
                 return false;
             }
             EVP_DecryptUpdate(ctx_, NULL, &plainLen, gcm_aad, sizeof(gcm_aad));
+            break;
+        case AES_256_CBC:
+            if (!EVP_DecryptInit_ex(ctx_, EVP_aes_256_cbc(), NULL,
+                key, iv_)) {
+                fprintf(stderr, "CryptoTool: Init error.\n");
+                EVP_CIPHER_CTX_reset(ctx_);
+                return false;
+            }
+            EVP_CIPHER_CTX_set_padding(ctx_, 0);
+            break;
+        case AES_128_CBC:
+            if (!EVP_DecryptInit_ex(ctx_, EVP_aes_128_cbc(), NULL,
+                key, iv_)) {
+                fprintf(stderr, "CryptoTool: Init error.\n");
+                EVP_CIPHER_CTX_reset(ctx_);
+                return false;
+            }
+            EVP_CIPHER_CTX_set_padding(ctx_, 0);
             break;
     }
 

@@ -107,7 +107,8 @@
 // for performance measurement
 #define SEC_TO_USEC 1000000.0
 
-enum ENCRYPT_SET {AES_256_GCM = 0, AES_128_GCM = 1, AES_256_CFB = 2, AES_128_CFB = 3};
+enum ENCRYPT_SET {AES_256_GCM = 0, AES_128_GCM = 1, AES_256_CFB = 2, AES_128_CFB = 3, 
+    AES_256_CBC, AES_128_CBC};
 
 enum HASH_SET {SHA_1 = 0, SHA_256 = 1, MD5 = 2};
 
