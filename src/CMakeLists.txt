@@ -1,5 +1,5 @@
-# set(CMAKE_BUILD_TYPE "Release")
-set(CMAKE_BUILD_TYPE "Debug")
+ set(CMAKE_BUILD_TYPE "Release")
+#set(CMAKE_BUILD_TYPE "Debug")
 find_package(Boost 1.36.0 REQUIRED COMPONENTS thread system serialization)
 find_package(OpenSSL REQUIRED)
 
