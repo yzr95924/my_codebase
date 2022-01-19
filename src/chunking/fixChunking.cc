@@ -100,9 +100,10 @@ void FixChunking::FixSizeChunking() {
     uint64_t chunkIDCnt = 0;
     memset(chunkBuffer_, 0, sizeof(int8_t) * avgChunkSize_);
     uint64_t fileSize = 0;
+    double totalTime = 0;
 
     // start chunking
-#if BREAKDOWN_DEFINE == 1
+#if CHUNKING_BREAKDOWN == 1
     gettimeofday(&startTime, NULL);
 #endif
 
@@ -163,7 +164,7 @@ void FixChunking::FixSizeChunking() {
     fileRecipe_.recipe.keyRecipeHead.fileSize = fileSize;
     fileRecipe_.dataType = DATA_TYPE_RECIPE;
 
-#if BREAKDOWN_DEFINE == 1
+#if CHUNKING_BREAKDOWN == 1
     gettimeofday(&endTime, NULL);
     totalTime += tool::GetTimeDiff(startTime, endTime);
     fprintf(stderr, "FixChunking: total chunking time = %.4lf\n", totalTime);

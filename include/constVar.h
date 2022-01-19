@@ -25,7 +25,7 @@
 #define ENCLAVE_PATH "../lib/storeEnclave.signed.so"
 
 // For client upload process breakdown
-#define CHUNKING_BREAKDOWN 0
+#define CHUNKING_BREAKDOWN 1
 #define FPWORKER_BREAKDOWN 0
 #define SENDER_BREAKDOWN 0
 ///

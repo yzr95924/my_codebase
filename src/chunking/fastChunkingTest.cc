@@ -117,7 +117,9 @@ void FastCDC::Chunking() {
     ifstream& fin = GetChunkingFile();
     uint64_t fileSize = 0;
     uint64_t chunkIDCnt = 0;
-#if BREAKDOWN_DEFINE == 1
+    double totalTime = 0;
+
+#if CHUNKING_BREAKDOWN == 1
     gettimeofday(&sFastCDCTime, NULL);
 #endif
     size_t totalOffset = 0;
@@ -150,7 +152,7 @@ void FastCDC::Chunking() {
     fileRecipe_.recipe.keyRecipeHead.fileSize = fileSize;
     fileRecipe_.dataType = DATA_TYPE_RECIPE;
 
-#if BREAKDOWN_DEFINE == 1
+#if CHUNKING_BREAKDOWN == 1
     gettimeofday(&eFastCDCTime, NULL);
     totalTime = tool::GetTimeDiff(sFastCDCTime, eFastCDCTime);
     fprintf(stderr, "FastCDC: total chunking time = %.4lf\n", totalTime);

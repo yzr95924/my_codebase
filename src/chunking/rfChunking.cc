@@ -113,8 +113,10 @@ void RFChunking::VarSizeChunking() {
     uint64_t chunkBufferCnt = 0, chunkIDCnt = 0;
     ifstream& fin = GetChunkingFile();
     uint64_t fileSize = 0;
+    double totalTime = 0;
+
     // starting chunking
-#if BREAKDOWN_DEFINE == 1
+#if CHUNKING_BREAKDOWN == 1
     gettimeofday(&sTotalTime, NULL);
 #endif 
     memset((char*)waitingForChunkingBuffer_, 0, sizeof(uint8_t) * readSize_);
@@ -198,7 +200,7 @@ void RFChunking::VarSizeChunking() {
     fileRecipe_.recipe.fileRecipeHead.fileSize = fileSize;
     fileRecipe_.recipe.keyRecipeHead.fileSize = fileSize;
     fileRecipe_.dataType = DATA_TYPE_RECIPE;
-#if BREAKDOWN_DEFINE == 1
+#if CHUNKING_BREAKDOWN == 1
     gettimeofday(&eTotalTime, NULL);
     totalTime = tool::GetTimeDiff(sTotalTime, eTotalTime);
     fprintf(stderr, "RFChunking: total chunking time = %.4lf\n", totalTime);
