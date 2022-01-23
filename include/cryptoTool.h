@@ -20,7 +20,7 @@
 using namespace std;
 
 static string ENCRYPT_STRING[] = {"AES_256_GCM", "AES_128_GCM", "AES_256_CFB", "AES_128_CFB",
-    "AES_256_CBC", "AES_128_CBC"};
+    "AES_256_CBC", "AES_128_CBC", "AES_256_CTR", "AES_128_CTR"};
 static string HASHER_STRING[] = {"SHA_1", "SHA_256", "MD5"};
 
 static const unsigned char gcm_aad[] = {

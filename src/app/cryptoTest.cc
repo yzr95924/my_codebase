@@ -13,9 +13,7 @@
 struct timeval start_time;
 struct timeval end_time;
 
-
-
-static const int64_t TEST_TIME = 1024 * 8 * 1024;
+static const uint64_t GB = (1 << 30);
 
 void reverseBytes(uint8_t* start, int size) {
     unsigned char *lo = start;
@@ -34,6 +32,7 @@ void usage() {
 }
 
 int main(int argc, char* argv[]) {
+    uint64_t TEST_DATA_SIZE = GB * 4;
     srand(time(NULL));
     const char optstring[] = "s:";  
     int option;
@@ -56,7 +55,10 @@ int main(int argc, char* argv[]) {
         exit(EXIT_FAILURE);
     }
 
-    CryptoTool* cipher = new CryptoTool(AES_256_CBC, SHA_256);
+
+    uint64_t TEST_TIME = TEST_DATA_SIZE / read_buffer_size;
+    cout << "TEST_TIME: " << TEST_DATA_SIZE << endl; 
+    CryptoTool* cipher = new CryptoTool(AES_256_GCM, SHA_256);
 
     uint8_t* key = (uint8_t*) malloc(sizeof(uint8_t) * 32);
     memset(key, 1, sizeof(int8_t) * 32);
@@ -68,6 +70,16 @@ int main(int argc, char* argv[]) {
     for (int i = 0; i < (read_buffer_size / sizeof(int)); i++) {
         *tmp_ptr = rand();
         tmp_ptr++;
+    }
+
+    tool::Logging(__FILE__, "Check encryption/decryption correctness.\n");
+    cipher->EncryptWithKey(input_buffer, read_buffer_size, key, output_buffer);
+    cipher->DecryptWithKey(output_buffer, read_buffer_size, key, tmp_buffer);
+    if (0 != memcmp(input_buffer, tmp_buffer, read_buffer_size)) {
+        tool::Logging(__FILE__, "Encryption/decryption not match.\n");
+        exit(EXIT_FAILURE);
+    } else {
+        tool::Logging(__FILE__, "Encryption/decryption is correct.\n");
     }
 
     double enc_time = 0;
@@ -108,24 +120,24 @@ int main(int argc, char* argv[]) {
     // hmac_time += tool::GetTimeDiff(start_time, end_time);
     // tool::Logging(__FILE__, "Finish hmac test.\n");
 
-    gettimeofday(&start_time, NULL); 
-    for (int i = 0; i < TEST_TIME; i++) {
-        cipher->EncryptWithKey(input_buffer, read_buffer_size, key, tmp_buffer);
-        // reverse(tmp_buffer, tmp_buffer + read_buffer_size);
-        // reverse(tmp_buffer, tmp_buffer + read_buffer_size);
-        reverseBytes(tmp_buffer, read_buffer_size);
-        cipher->EncryptWithKey(tmp_buffer, read_buffer_size, key, output_buffer);
-    }
-    gettimeofday(&end_time, NULL);
-    aes_cmc_time += tool::GetTimeDiff(start_time, end_time);
-    tool::Logging(__FILE__, "Finish hmac test.\n");
+    // gettimeofday(&start_time, NULL); 
+    // for (int i = 0; i < TEST_TIME; i++) {
+    //     cipher->EncryptWithKey(input_buffer, read_buffer_size, key, tmp_buffer);
+    //     // reverse(tmp_buffer, tmp_buffer + read_buffer_size);
+    //     // reverse(tmp_buffer, tmp_buffer + read_buffer_size);
+    //     reverseBytes(tmp_buffer, read_buffer_size);
+    //     cipher->EncryptWithKey(tmp_buffer, read_buffer_size, key, output_buffer);
+    // }
+    // gettimeofday(&end_time, NULL);
+    // aes_cmc_time += tool::GetTimeDiff(start_time, end_time);
+    // tool::Logging(__FILE__, "Finish AES-CMC test.\n");
 
     tool::Logging(__FILE__, "Test done.\n");
     tool::Logging(__FILE__, "Encryption (MiB/s): %.3lf\n", (read_buffer_size * TEST_TIME) / MiB_2_B / enc_time);
     tool::Logging(__FILE__, "Hashing (MiB/s): %.3lf\n", (read_buffer_size * TEST_TIME) / MiB_2_B / hash_time);
     tool::Logging(__FILE__, "Decryption (MiB/s): %.3lf\n", (read_buffer_size * TEST_TIME) / MiB_2_B / dec_time);
     // tool::Logging(__FILE__, "HMAC (MiB/s): %.3lf\n", (read_buffer_size * TEST_TIME) / MiB_2_B / hmac_time);
-    tool::Logging(__FILE__, "AES-CMC (MiB/s): %.3lf\n", (read_buffer_size * TEST_TIME) / MiB_2_B / aes_cmc_time);
+    // tool::Logging(__FILE__, "AES-CMC (MiB/s): %.3lf\n", (read_buffer_size * TEST_TIME) / MiB_2_B / aes_cmc_time);
     
     free(input_buffer);
     free(output_buffer);
