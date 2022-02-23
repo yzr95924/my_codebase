@@ -149,10 +149,9 @@ void RFChunking::VarSizeChunking() {
             // find chunk pattern 
             if ((winFp & anchorMask_) == anchorValue_) {
                 Data_t tempChunk;
-                tempChunk.chunk.ID = chunkIDCnt;
-                tempChunk.chunk.logicDataSize = chunkBufferCnt;
-                memcpy(tempChunk.chunk.data, chunkBuffer_, chunkBufferCnt);
-                tempChunk.dataType = DATA_TYPE_CHUNK;
+                tempChunk.chunk.chunkSize = chunkBufferCnt;
+                memcpy(tempChunk.chunk.logicData, chunkBuffer_, chunkBufferCnt);
+                tempChunk.dataType = DATA_CHUNK;
 
                 // reset
                 chunkIDCnt++;
@@ -164,10 +163,9 @@ void RFChunking::VarSizeChunking() {
             // cap the maximum chunk size 
             if (chunkBufferCnt >= maxChunkSize_) {
                 Data_t tempChunk;
-                tempChunk.chunk.ID = chunkIDCnt;
-                tempChunk.chunk.logicDataSize = chunkBufferCnt;
-                memcpy(tempChunk.chunk.data, chunkBuffer_, chunkBufferCnt);
-                tempChunk.dataType = DATA_TYPE_CHUNK;
+                tempChunk.chunk.chunkSize = chunkBufferCnt;
+                memcpy(tempChunk.chunk.logicData, chunkBuffer_, chunkBufferCnt);
+                tempChunk.dataType = DATA_CHUNK;
 
                 // reset 
                 chunkIDCnt++;
@@ -185,21 +183,18 @@ void RFChunking::VarSizeChunking() {
     // add the final chunk
     if (chunkBufferCnt != 0) {
         Data_t tempChunk;
-        tempChunk.chunk.ID = chunkIDCnt;
-        tempChunk.chunk.logicDataSize = chunkBufferCnt;
-        memcpy(tempChunk.chunk.data, chunkBuffer_, chunkBufferCnt);
-        tempChunk.chunk.type = DATA_TYPE_CHUNK;
+        tempChunk.chunk.chunkSize = chunkBufferCnt;
+        memcpy(tempChunk.chunk.logicData, chunkBuffer_, chunkBufferCnt);
+        tempChunk.dataType = DATA_CHUNK;
 
         // reset 
         chunkIDCnt++;
         chunkBufferCnt = 0;
         winFp = 0;
     }
-    fileRecipe_.recipe.fileRecipeHead.totalChunkNumber = chunkIDCnt;
-    fileRecipe_.recipe.keyRecipeHead.totalChunkKeyNumber = chunkIDCnt;
-    fileRecipe_.recipe.fileRecipeHead.fileSize = fileSize;
-    fileRecipe_.recipe.keyRecipeHead.fileSize = fileSize;
-    fileRecipe_.dataType = DATA_TYPE_RECIPE;
+    fileRecipe_.recipeEnd.totalChunkNumber = chunkIDCnt;
+    fileRecipe_.recipeEnd.fileSize = fileSize;
+    fileRecipe_.dataType = RECIPE_END;
 #if CHUNKING_BREAKDOWN == 1
     gettimeofday(&eTotalTime, NULL);
     totalTime = tool::GetTimeDiff(sTotalTime, eTotalTime);

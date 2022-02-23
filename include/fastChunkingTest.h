@@ -68,6 +68,7 @@ static const uint32_t GEAR[] = {
     0x0DC82C11, 0x23FFE354, 0x2EAC53A6, 0x16139E09, 0x0AFD0DBC, 0x2A4D4237,
     0x56A368C7, 0x234325E4, 0x2DCE9187, 0x32E8EA7E};
 
+using namespace std;
 
 class FastCDC {
 private:

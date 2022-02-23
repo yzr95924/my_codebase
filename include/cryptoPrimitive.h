@@ -14,6 +14,7 @@
 
 #include <openssl/evp.h>
 #include <openssl/crypto.h>
+#include <openssl/err.h>
 #include "dataStructure.h"
 #include "configure.h"
 
@@ -34,6 +35,9 @@ class CryptoPrimitive {
         
         // initialized vector
         uint8_t* iv_;
+
+        // update the pKey
+        EVP_PKEY* pKey_;
 
     public:
         /**
@@ -83,6 +87,17 @@ class CryptoPrimitive {
          */
         void DecryptWithKey(EVP_CIPHER_CTX* ctx, uint8_t* ciphertext, const int dataSize, 
             uint8_t* key, uint8_t* dataBuffer);
+
+        /**
+         * @brief Generate the HMAC of the input data
+         * 
+         * @param mdCtx the mdCtx
+         * @param inputData input data buffer
+         * @param dataSize input data size
+         * @param hMAC the output HMAC
+         */
+        void GenerateHMAC(EVP_MD_CTX* mdCtx, uint8_t* inputData, const int dataSize, 
+            uint8_t* hMAC);
 };
 
 #endif //BASICDEDUP_CRYPTOPRIMITIVE_h

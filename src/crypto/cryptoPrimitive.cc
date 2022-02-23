@@ -18,6 +18,10 @@ CryptoPrimitive::CryptoPrimitive(int cipherType, int hashType) {
         exit(EXIT_FAILURE);
     }
     memset(iv_, 0, sizeof(uint8_t) * CRYPTO_BLOCK_SIZE);
+
+    string deriveStr = "password";
+    pKey_ = EVP_PKEY_new_raw_private_key(EVP_PKEY_HMAC, NULL, (uint8_t*)deriveStr.c_str(),
+        deriveStr.size());
 }
 
 /**
@@ -26,6 +30,7 @@ CryptoPrimitive::CryptoPrimitive(int cipherType, int hashType) {
  */
 CryptoPrimitive::~CryptoPrimitive() {
     free(iv_);
+    EVP_PKEY_free(pKey_);
 }
 
 /**
@@ -156,6 +161,7 @@ void CryptoPrimitive::EncryptWithKey(EVP_CIPHER_CTX* ctx, uint8_t* dataBuffer, c
                 tool::Logging(myName_.c_str(), "init error.\n");
                 exit(EXIT_FAILURE);
             }
+            EVP_CIPHER_CTX_set_padding(ctx, 0);
             break;
         }
         case AES_128_ECB: {
@@ -164,6 +170,7 @@ void CryptoPrimitive::EncryptWithKey(EVP_CIPHER_CTX* ctx, uint8_t* dataBuffer, c
                 tool::Logging(myName_.c_str(), "init error.\n");
                 exit(EXIT_FAILURE);
             }
+            EVP_CIPHER_CTX_set_padding(ctx, 0);
             break;
         }
         default: {
@@ -182,7 +189,8 @@ void CryptoPrimitive::EncryptWithKey(EVP_CIPHER_CTX* ctx, uint8_t* dataBuffer, c
     cipherLen += len;
 	
     if (cipherLen != dataSize) {
-        tool::Logging(myName_.c_str(), "encryption output size not equal to origin size.\n");
+        tool::Logging(myName_.c_str(), "encryption output size not equal to origin size"
+            "cipherLen %d, len %d\n", cipherLen, dataSize);
         exit(EXIT_FAILURE);
     }
 
@@ -264,6 +272,7 @@ void CryptoPrimitive::DecryptWithKey(EVP_CIPHER_CTX* ctx, uint8_t* ciphertext, c
                 tool::Logging(myName_.c_str(), "init error.\n");
                 exit(EXIT_FAILURE);
             }
+            EVP_CIPHER_CTX_set_padding(ctx, 0);
             break;
         }
         case AES_128_ECB: {
@@ -272,6 +281,7 @@ void CryptoPrimitive::DecryptWithKey(EVP_CIPHER_CTX* ctx, uint8_t* ciphertext, c
                 tool::Logging(myName_.c_str(), "init error.\n");
                 exit(EXIT_FAILURE);
             }
+            EVP_CIPHER_CTX_set_padding(ctx, 0);
             break;
         }
         default: {
@@ -297,5 +307,62 @@ void CryptoPrimitive::DecryptWithKey(EVP_CIPHER_CTX* ctx, uint8_t* ciphertext, c
     }
 
     EVP_CIPHER_CTX_reset(ctx);
+    return ;
+}
+
+/**
+ * @brief Generate the HMAC of the input data
+ * 
+ * @param mdCtx the mdCtx
+ * @param inputData input data buffer
+ * @param dataSize input data size
+ * @param hMAC the output HMAC
+ */
+void CryptoPrimitive::GenerateHMAC(EVP_MD_CTX* mdCtx, uint8_t* inputData, 
+    const int dataSize, uint8_t* hMAC) {
+    int expectedHashSize = 0;
+    switch (hashType_) {
+        case SHA_1:
+            if (EVP_DigestSignInit(mdCtx, NULL, EVP_sha1(), NULL, pKey_) != 1) {
+                tool::Logging(myName_.c_str(), "HMAC init error, error 0x%lx\n", ERR_get_error());
+                exit(EXIT_FAILURE);
+            }
+            expectedHashSize = 20;
+            break;
+        case SHA_256:
+            if (EVP_DigestSignInit(mdCtx, NULL, EVP_sha256(), NULL, pKey_) != 1) {
+                tool::Logging(myName_.c_str(), "HMAC init error, error 0x%lx\n", ERR_get_error());
+                exit(EXIT_FAILURE);
+            }
+            expectedHashSize = 32;
+            break;
+        case MD5:
+            if (EVP_DigestSignInit(mdCtx, NULL, EVP_md5(), NULL, pKey_) != 1) {
+                tool::Logging(myName_.c_str(), "HMAC init error, error 0x%lx\n", ERR_get_error());
+                exit(EXIT_FAILURE);
+            }
+            expectedHashSize = 16;
+            break;
+    }
+
+    if (EVP_DigestSignUpdate(mdCtx, inputData, dataSize) != 1) {
+        tool::Logging(myName_.c_str(), "HMAC update error, error 0x%lx\n", ERR_get_error());
+        exit(EXIT_FAILURE);
+    }
+
+    // first call the buffer should be NULL, and receive the size of the signature
+    size_t sigLen = CHUNK_HASH_SIZE;
+    if (EVP_DigestSignFinal(mdCtx, hMAC, &sigLen) != 1) {
+        tool::Logging(myName_.c_str(), "HMAC final error, error 0x%lx\n", ERR_get_error());
+        exit(EXIT_FAILURE);
+    }
+
+    if (sigLen != expectedHashSize) {
+        tool::Logging(myName_.c_str(), "HMAC sig len cannot match the expected size.\n");
+        exit(EXIT_FAILURE);
+    }
+
+    EVP_MD_CTX_reset(mdCtx);
+
     return ;
 }

@@ -133,10 +133,9 @@ void FastCDC::Chunking() {
         while (((len - localOffset) >= maxChunkSize_) || (end && (localOffset < len))) {
             uint32_t cp = CutPoint(waitingForChunkingBuffer_ + localOffset, len - localOffset);
             Data_t tempChunk;
-            tempChunk.chunk.ID = chunkIDCnt;
-            tempChunk.chunk.logicDataSize = cp;
-            memcpy(tempChunk.chunk.data, waitingForChunkingBuffer_ + localOffset, cp);
-            tempChunk.chunk.type = DATA_TYPE_CHUNK;
+            tempChunk.chunk.chunkSize = cp;
+            memcpy(tempChunk.chunk.logicData, waitingForChunkingBuffer_ + localOffset, cp);
+            tempChunk.dataType = DATA_CHUNK;
             localOffset += cp;
             fileSize += cp;
             chunkIDCnt++;
@@ -146,11 +145,9 @@ void FastCDC::Chunking() {
     
         fin.seekg(totalOffset, std::ios_base::beg);
     }
-    fileRecipe_.recipe.fileRecipeHead.totalChunkNumber = chunkIDCnt;
-    fileRecipe_.recipe.keyRecipeHead.totalChunkKeyNumber = chunkIDCnt;
-    fileRecipe_.recipe.fileRecipeHead.fileSize = fileSize;
-    fileRecipe_.recipe.keyRecipeHead.fileSize = fileSize;
-    fileRecipe_.dataType = DATA_TYPE_RECIPE;
+    fileRecipe_.recipeEnd.totalChunkNumber = chunkIDCnt;
+    fileRecipe_.recipeEnd.fileSize = fileSize;
+    fileRecipe_.dataType = RECIPE_END;
 
 #if CHUNKING_BREAKDOWN == 1
     gettimeofday(&eFastCDCTime, NULL);

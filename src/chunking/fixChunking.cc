@@ -120,10 +120,9 @@ void FixChunking::FixSizeChunking() {
                 memcpy(chunkBuffer_, waitingForChunkingBuffer_ + chunkedSize,
                     avgChunkSize_);
                 Data_t tempChunk;
-                tempChunk.chunk.ID = chunkIDCnt;
-                tempChunk.chunk.logicDataSize = avgChunkSize_;
-                memcpy(tempChunk.chunk.data, chunkBuffer_, avgChunkSize_);
-                tempChunk.dataType = DATA_TYPE_CHUNK;
+                tempChunk.chunk.chunkSize = avgChunkSize_;
+                memcpy(tempChunk.chunk.logicData, chunkBuffer_, avgChunkSize_);
+                tempChunk.dataType = DATA_CHUNK;
 
                 chunkIDCnt++;
                 chunkedSize += avgChunkSize_;
@@ -136,19 +135,17 @@ void FixChunking::FixSizeChunking() {
                 if (retSize > avgChunkSize_) {
                     memcpy(chunkBuffer_, waitingForChunkingBuffer_ + chunkedSize, avgChunkSize_);
 
-                    tempChunk.chunk.ID = chunkIDCnt;
-                    tempChunk.chunk.logicDataSize = avgChunkSize_;
-                    memcpy(tempChunk.chunk.data, chunkBuffer_, avgChunkSize_);
+                    tempChunk.chunk.chunkSize = avgChunkSize_;
+                    memcpy(tempChunk.chunk.logicData, chunkBuffer_, avgChunkSize_);
                     chunkedSize += avgChunkSize_;
                 } else {
                     memcpy(chunkBuffer_, waitingForChunkingBuffer_ + chunkedSize, retSize);
 
-                    tempChunk.chunk.ID = chunkIDCnt;
-                    tempChunk.chunk.logicDataSize = retSize;
-                    memcpy(tempChunk.chunk.data, chunkBuffer_, retSize);
+                    tempChunk.chunk.chunkSize = retSize;
+                    memcpy(tempChunk.chunk.logicData, chunkBuffer_, retSize);
                     chunkedSize += retSize;
                 }
-                tempChunk.dataType = DATA_TYPE_CHUNK;
+                tempChunk.dataType = DATA_CHUNK;
                 retSize = totalReadSize - chunkedSize;
                 chunkIDCnt++;
             }
@@ -158,11 +155,9 @@ void FixChunking::FixSizeChunking() {
             break;
         }
     }
-    fileRecipe_.recipe.fileRecipeHead.totalChunkNumber = chunkIDCnt;
-    fileRecipe_.recipe.keyRecipeHead.totalChunkKeyNumber = chunkIDCnt;
-    fileRecipe_.recipe.fileRecipeHead.fileSize = fileSize;
-    fileRecipe_.recipe.keyRecipeHead.fileSize = fileSize;
-    fileRecipe_.dataType = DATA_TYPE_RECIPE;
+    fileRecipe_.recipeEnd.totalChunkNumber = chunkIDCnt;
+    fileRecipe_.recipeEnd.fileSize = fileSize;
+    fileRecipe_.dataType = RECIPE_END;
 
 #if CHUNKING_BREAKDOWN == 1
     gettimeofday(&endTime, NULL);

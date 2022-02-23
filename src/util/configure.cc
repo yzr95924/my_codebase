@@ -95,42 +95,4 @@ void Configure::ReadConf(std::string path) {
 
     // for client id
     clientID_ = root.get<int>("DataSender.clientID_");
-
-    if (SHOW_CONFIGURE) {
-        fprintf(stderr, "=================DataWriter Configure===============\n");
-        fprintf(stderr, "Backup end type: %s\n", backupEndType_.c_str());
-        fprintf(stderr, "Datawriter thread num: %u\n", threadNum_);
-        fprintf(stderr, "=================Chunker Configure==================\n");
-        fprintf(stderr, "Max chunk size: %lu\n", maxChunkSize_);
-        fprintf(stderr, "Min chunk size: %lu\n", minChunkSize_);
-        fprintf(stderr, "Avg chunk size: %lu\n", avgChunkSize_);
-        fprintf(stderr, "Sliding window size: %lu\n", slidingWinSize_);
-        fprintf(stderr, "Segment size: %lu\n", segmentSize_);
-        fprintf(stderr, "Read size: %lu\n", readSize_);
-        fprintf(stderr, "=================StorageCore Configure==============\n");
-        fprintf(stderr, "Recipe root path: %s\n", recipeRootPath_.c_str());
-        fprintf(stderr, "Container root path: %s\n",containerRootPath_.c_str());
-        fprintf(stderr, "Meta root path %s\n", metaRootPath_.c_str());
-        fprintf(stderr, "fp2ChunkDBName_: %s\n", fp2ChunkDBName_.c_str());
-        fprintf(stderr, "fp2MetaDBName_: %s\n", fp2MetaDBName_.c_str());
-        fprintf(stderr, "================Restore Configure===================\n");
-        fprintf(stderr, "restoreBatchSize_: %lu\n", restoreBatchSize_);
-        fprintf(stderr, "read cache size: %lu\n", readCacheSize_);
-        fprintf(stderr, "================Compression Configure===============\n");
-        fprintf(stderr, "enableCompression_: %s\n", enableCompression_.c_str());
-        fprintf(stderr, "================Backup Configure====================\n");
-        fprintf(stderr, "file2MetaDBName_: %s\n", file2MetaDBName_.c_str());
-        fprintf(stderr, "tarDir_: %s\n", tarDir_.c_str());
-        fprintf(stderr, "restoreTarDir_: %s\n", restoreTarDir_.c_str());
-        fprintf(stderr, "================nCloud connection===================\n");
-        fprintf(stderr, "redis ip: %s\n", redisIP_.c_str());
-        fprintf(stderr, "redis port: %hu\n", redisPort_);
-        fprintf(stderr, "redis timeout: %u\n", redisReplyWaitTimeout_);
-        fprintf(stderr, "redis password: %s\n", redisPassword_.c_str());
-        fprintf(stderr, "===================Storage Server===================\n");
-        fprintf(stderr, "storage server ip: %s\n", storageServerIp_.c_str());
-        fprintf(stderr, "storage server port: %d\n", storageServerPort_);
-        fprintf(stderr, "client ID: %d\n", clientID_);
-        fprintf(stderr, "====================================================\n");
-    }
 }
