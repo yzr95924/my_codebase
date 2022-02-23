@@ -1,140 +1,82 @@
 /**
  * @file constVar.h
  * @author Zuoru YANG (zryang@cse.cuhk.edu.hk)
- * @brief define the const variables 
+ * @brief define the const variables
  * @version 0.1
- * @date 2020-12-10
+ * @date 2022-02-05
  * 
- * @copyright Copyright (c) 2020
+ * @copyright Copyright (c) 2022
  * 
  */
+#ifndef EDRSTORE_CONST_VAR_H
+#define EDRSTORE_CONST_VAR_H
 
-#ifndef CONST_VAR_H
-#define CONST_VAR_H
+#include <bits/stdc++.h>
 
-// For configure show
-#define SHOW_CONFIGURE 0
-
-// For session key encryption breakdown
-#define SESSION_KEY_ENCRYPTION 1
-
-// the top-k value
-#define TOP_K_PARAMETER 1024*512
-
-// for enclave lib path
-#define ENCLAVE_PATH "../lib/storeEnclave.signed.so"
-
-// For client upload process breakdown
+// client side breakdown
 #define CHUNKING_BREAKDOWN 1
-#define FPWORKER_BREAKDOWN 0
-#define SENDER_BREAKDOWN 0
-///
 
-#define RECEIVER_BREAKDOWN 0
-#define STORAGE_BREAKDOWN 0
-#define INDEX_BREAKDOWN 0
-#define DATAWRITER_BREAKDOWN 0
-// For restore process breakdown
-#define RESTORE_WRITER_BREAKDOWN 0
-#define CHUNK_RETRIVER_BREAKDOWN 0
-#define RECV_DECODE_BREAKDOWN 0 
+// server side breakdown
 
-// For SGX_Breakdown 
-#define SGX_BREAKDOWN 0
+// chunking method
+static const int CHUNKER_FIX_SIZE_TYPE = 0; // for the type of fixed-size chunker
+static const int CHUNKER_VAR_SIZE_TYPE = 1; // for the type of variable-size chunker
+static const int FAST_CDC = 2;
 
-// For whether enable restore container cache
-#define CONTAINER_CACHE_ENABLE 1
+// chunk type
+static const size_t MAX_CHUNK_SIZE = 16384;
 
-// the length of the hash
-#define HIGH_SECURITY 1
-#define CRYPTO_BLOCK_SIZE 16
+static const uint32_t CHUNK_QUEUE_SIZE = (1024 * 4);
+static const size_t THREAD_STACK_SIZE = (8*1024*1024);
 
-#if (HIGH_SECURITY == 1) 
-#define CHUNK_FINGER_PRINT_SIZE 32
-#define CHUNK_HASH_SIZE 32
-#define CHUNK_ENCRYPT_KEY_SIZE 32
-#define FILE_NAME_HASH_SIZE 32
-#define HASH_TYPE 1
-#define CIPHER_TYPE 0
-#else
-#define CHUNK_FINGER_PRINT_SIZE 16
-#define CHUNK_HASH_SIZE 16
-#define CHUNK_ENCRYPT_KEY_SIZE 16
-#define FILE_NAME_HASH_SIZE 16
-#define HASH_TYPE 0
-#define CIPHER_TYPE 1
-#endif
+// sketch & super-feature & feature settings
+static const uint32_t SUPER_NUM_PER_CHUNK = 3; // 3 super-feature per sketch
+static const uint32_t FEATURE_NUM_PER_SUPER = 4; // 4 features per super-feature
+static const uint32_t FEATURE_NUM_PER_CHUNK = SUPER_NUM_PER_CHUNK * FEATURE_NUM_PER_SUPER;
 
-// the size of chunk
-#define MIN_CHUNK_SIZE 4096
-#define AVG_CHUNK_SIZE 8192
-#define MAX_CHUNK_SIZE 16384
+// for rabin fingerprint
+static const uint64_t FINGERPRINT_PT = 0xbfe6b8a5bf378d83LL;
 
-// the size of segment
-#define AVG_SEGMENT_SIZE (1024 * 1024 * 10) // 10MB default
-#define MIN_SEGMENT_SIZE (AVG_SEGMENT_SIZE / 2) // 5MB default
-#define MAX_SEGMENT_SIZE (AVG_SEGMENT_SIZE * 2) // 20MB default
-#define DIVISOR ((AVG_SEGMENT_SIZE - MIN_SEGMENT_SIZE) / (8 * (1 << 10)))
-#define PATTERN 1
-#define MAX_ALLOW_FACTOR 1
+// data type enum
+enum DATA_TYPE {DATA_CHUNK = 0, RECIPE_END};
 
-// the type of chunker
-#define CHUNKER_FIX_SIZE_TYPE 0 // for the type of fixed-size chunker
-#define CHUNKER_VAR_SIZE_TYPE 1 // for the type of variable-size chunker
-// For trace-driven experiment
-#define FSL_TRACE 2
-#define UBC_TRACE 3
-#define FAST_CDC 4
+// for crypto info 
+enum ENCRYPT_SET {AES_256_GCM = 0, AES_128_GCM, AES_256_CFB, AES_128_CFB, 
+    AES_256_CTR, AES_128_CTR, AES_256_ECB, AES_128_ECB};
+enum HASH_SET {SHA_256 = 0, MD5 = 1, SHA_1 = 2};
+static const uint32_t CRYPTO_BLOCK_SIZE = 16;
+static const uint32_t CHUNK_HASH_SIZE = 32;
+static const int HASH_TYPE = SHA_256;
+static const int CIPHER_TYPE = AES_256_CTR;
 
 // the setting of the container
-#define MAX_CONTAINER_SIZE (1 << 23) // container size: 8MB
-#define MAX_COMPRESS_BUFFER_SIZE (1 << 24) // compress buffer size: 16MB
-#define UUID_LENGTH 36
+static const uint32_t MAX_CONTAINER_SIZE = (1 << 22); // container size: 4MB
+static const uint32_t CONTAINER_ID_LENGTH = 8; // 8 bytes
 
-// define the data type of the MQ
-#define DATA_TYPE_RECIPE 1
-#define DATA_TYPE_CHUNK 2
-#define DATA_TYPE_HEAD 3
-#define DATA_SEGMENT_END_FLAG 4
-
-// configure for sparse index
-#define SPARSE_INDEX_SAMPLE_RATE 6
-#define SPARSE_INDEX_CHAMPION_NUM 10
-#define SPARSE_INDEX_MANIFIEST_CAP_NUM 10
-
-#define SKETCH_DEPTH 4
-
-// for performance measurement
-#define SEC_TO_USEC 1000000.0
-
-enum ENCRYPT_SET {AES_256_GCM = 0, AES_128_GCM, AES_256_CFB, AES_128_CFB, 
-    AES_256_CBC, AES_128_CBC, AES_256_CTR, AES_128_CTR};
-
-enum HASH_SET {SHA_1 = 0, SHA_256 = 1, MD5 = 2};
-
-enum ENABLE_SGX_FLAG {SGX_disable = 0, SGX_enable = 1};
-
-enum INDEX_TYPE_SET {SIMPLE = 0, EXTREME_BINNING = 1, SPARSE_INDEX = 2, FREQ_INDEX = 3, FREQ_TWO_INDEX = 4, ENCLAVE_BASIC = 5};
-
+// the operation type
+enum CLIENT_OPT_TYPE {UPLOAD_OPT = 0, RESTORE_OPT};
 
 // for SSL connection
-#define IN_SERVERSIDE 0
-#define IN_CLIENTSIDE 1
+static const int IN_SERVERSIDE = 0;
+static const int IN_CLIENTSIDE = 1;
+
+// for network protocol
+enum NETWORK_PROTOCOL {CLIENT_UPLOAD_LOGIN = 0, CLIENT_RESTORE_LOGIN, 
+    SEND_CHUNK, SEND_NORMAL_RECIPE, SEND_RECIPE_END,
+    REPLY_NOT_EXIST, REPLY_LOGIN, RESTORE_RECIPE, 
+    RESTORE_RECIPE_REPLY, RESTORE_CHUNK, CLIENT_RESTORE_READY};
+
+enum CHUNK_STATUS {UNIQUE = 0, DUPLICATE, SIMILAR, NON_SIMILAR, COMPRESSED_CHUNK,
+    UNCOMPRESSED_CHUNK};
 
 // for SSL connection 
-#define SERVER_CERT "../key/server/server.crt"
-#define SERVER_KEY "../key/server/server.key"
-#define CLIENT_CERT "../key/client/client.crt"
-#define CLIENT_KEY "../key/client/client.key"
-#define CA_CERT "../key/ca/ca.crt"
+static const char SERVER_CERT[] = "../key/server/server.crt";
+static const char SERVER_KEY[] = "../key/server/server.key";
+static const char CLIENT_CERT[] = "../key/client/client.crt";
+static const char CLIENT_KEY[] = "../key/client/client.key";
+static const char CA_CERT[] = "../key/ca/ca.crt";
 
-// for network message protocol code 
-enum PROTCOL_CODE_SET {CLIENT_UPLOAD_CHUNK = 0, CLIENT_UPLOAD_HEADER, CLIENT_UPLOAD_RECIPE, CLIENT_EXIT, 
-    RESTORE_REQUEST, RESTORE_DATA, RESTORE_FINAL, CLIENT_LOGIN_UPLOAD, CLIENT_LOGIN_RESTORE, 
-    SERVER_LOGIN_RESPONSE, SERVER_FILE_EXIST, SERVER_FILE_NON_EXIST};
-
-#define CHUNK_QUEUE_SIZE 5000
-#define CONTAINER_QUEUE_SIZE 100
-#define REQUIRED_CONTAINER_CAPPING_VALUE 16
+// max client
+static const int MAX_CLIENT_NUM = 10;
 
 #endif
