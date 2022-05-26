@@ -98,6 +98,18 @@ class CryptoPrimitive {
          */
         void GenerateHMAC(EVP_MD_CTX* mdCtx, uint8_t* inputData, const int dataSize, 
             uint8_t* hMAC);
+        
+        /**
+         * @brief test the aes-ecb mode
+         * 
+         * @param ctx cipher ctx
+         * @param dataBuffer input data buffer
+         * @param dataSize input data size
+         * @param key encryption key
+         * @param ciphertext output ciphertext
+         */
+        void TestAESECBEnc(EVP_CIPHER_CTX* ctx, uint8_t* dataBuffer,
+            const int dataSize, uint8_t* key, uint8_t* ciphertext);
 };
 
 #endif //BASICDEDUP_CRYPTOPRIMITIVE_h

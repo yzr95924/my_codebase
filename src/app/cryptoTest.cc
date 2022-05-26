@@ -48,16 +48,16 @@ int main(int argc, char* argv[]) {
 
     // prepare
     uint64_t TEST_TIME = TEST_DATA_SIZE / read_buffer_size;
-    CryptoPrimitive* cipher = new CryptoPrimitive(AES_256_ECB, SHA_256);
+    CryptoPrimitive* cipher = new CryptoPrimitive(AES_256_CTR, SHA_256);
     EVP_CIPHER_CTX* cipherCtx = EVP_CIPHER_CTX_new();
     EVP_MD_CTX* mdCtx = EVP_MD_CTX_new();
 
     uint8_t* key = (uint8_t*) malloc(sizeof(uint8_t) * 32);
     memset(key, 1, sizeof(uint8_t) * 32);
     uint8_t hash[CHUNK_HASH_SIZE];
-    uint8_t* output_buffer = (uint8_t*) malloc(read_buffer_size);
-    uint8_t* input_buffer = (uint8_t*) malloc(read_buffer_size);
-    uint8_t* tmp_buffer = (uint8_t*) malloc(read_buffer_size);
+    uint8_t* output_buffer = (uint8_t*) malloc(read_buffer_size + CRYPTO_BLOCK_SIZE);
+    uint8_t* input_buffer = (uint8_t*) malloc(read_buffer_size + CRYPTO_BLOCK_SIZE);
+    uint8_t* tmp_buffer = (uint8_t*) malloc(read_buffer_size + CRYPTO_BLOCK_SIZE);
     int* tmp_ptr = (int*)input_buffer;
     for (int i = 0; i < (read_buffer_size / sizeof(int)); i++) {
         *tmp_ptr = rand();
@@ -65,59 +65,61 @@ int main(int argc, char* argv[]) {
     }
 
     // preparation done
-
-    tool::Logging(myName.c_str(), "check encryption/decryption correctness.\n");
-    cipher->EncryptWithKey(cipherCtx, input_buffer, read_buffer_size, key, 
-        output_buffer);
-    cipher->DecryptWithKey(cipherCtx, output_buffer, read_buffer_size, key, 
-        tmp_buffer);
-    if (0 != memcmp(input_buffer, tmp_buffer, read_buffer_size)) {
-        tool::Logging(myName.c_str(), "encryption/decryption not match.\n");
-        exit(EXIT_FAILURE);
-    } else {
-        tool::Logging(myName.c_str(), "encryption/decryption is correct.\n");
-    }
+    // tool::Logging(myName.c_str(), "check encryption/decryption correctness.\n");
+    // cipher->EncryptWithKey(cipherCtx, input_buffer, read_buffer_size, key, 
+    //     output_buffer);
+    // cipher->DecryptWithKey(cipherCtx, output_buffer, read_buffer_size, key, 
+    //     tmp_buffer);
+    // if (0 != memcmp(input_buffer, tmp_buffer, read_buffer_size)) {
+    //     tool::Logging(myName.c_str(), "encryption/decryption not match.\n");
+    //     exit(EXIT_FAILURE);
+    // } else {
+    //     tool::Logging(myName.c_str(), "encryption/decryption is correct.\n");
+    // }
 
     double enc_time = 0;
     double dec_time = 0;
     double hash_time = 0;
     double hmac_time = 0;
     tool::Logging(myName.c_str(), "start test.\n");
+    uint8_t tmpCipher[MAX_CHUNK_SIZE];
     gettimeofday(&start_time, NULL);
     for (int i = 0; i < TEST_TIME; i++) {
         cipher->EncryptWithKey(cipherCtx, input_buffer, read_buffer_size, 
+            key, tmpCipher);
+        cipher->TestAESECBEnc(cipherCtx, tmpCipher, read_buffer_size,
             key, output_buffer);
     }
     gettimeofday(&end_time, NULL);
     enc_time += tool::GetTimeDiff(start_time, end_time);
     tool::Logging(myName.c_str(), "finish encryption test.\n");
 
-    gettimeofday(&start_time, NULL);
-    for (int i = 0; i < TEST_TIME; i++) {
-        cipher->GenerateHash(mdCtx, input_buffer, read_buffer_size, 
-            hash);
-    }
-    gettimeofday(&end_time, NULL);
-    hash_time += tool::GetTimeDiff(start_time, end_time);
-    tool::Logging(myName.c_str(), "finish hashing test.\n");
+    // gettimeofday(&start_time, NULL);
+    // for (int i = 0; i < TEST_TIME; i++) {
+    //     cipher->GenerateHash(mdCtx, input_buffer, read_buffer_size, 
+    //         hash);
+    // }
+    // gettimeofday(&end_time, NULL);
+    // hash_time += tool::GetTimeDiff(start_time, end_time);
+    // tool::Logging(myName.c_str(), "finish hashing test.\n");
 
-    gettimeofday(&start_time, NULL);
-    for (int i = 0; i < TEST_TIME; i++) {
-        cipher->GenerateHMAC(mdCtx, input_buffer, read_buffer_size,
-            hash);
-    }
-    gettimeofday(&end_time, NULL);
-    hmac_time += tool::GetTimeDiff(start_time, end_time);
-    tool::Logging(myName.c_str(), "finish hmac test.\n");
+    // gettimeofday(&start_time, NULL);
+    // for (int i = 0; i < TEST_TIME; i++) {
+    //     cipher->GenerateHMAC(mdCtx, input_buffer, read_buffer_size,
+    //         hash);
+    // }
+    // gettimeofday(&end_time, NULL);
+    // hmac_time += tool::GetTimeDiff(start_time, end_time);
+    // tool::Logging(myName.c_str(), "finish hmac test.\n");
 
-    gettimeofday(&start_time, NULL);
-    for (int i = 0; i < TEST_TIME; i++) {
-        cipher->DecryptWithKey(cipherCtx, output_buffer, read_buffer_size, 
-            key, input_buffer); 
-    }
-    gettimeofday(&end_time, NULL);
-    dec_time += tool::GetTimeDiff(start_time, end_time);
-    tool::Logging(myName.c_str(), "finish decryption test.\n");
+    // gettimeofday(&start_time, NULL);
+    // for (int i = 0; i < TEST_TIME; i++) {
+    //     cipher->DecryptWithKey(cipherCtx, output_buffer, read_buffer_size, 
+    //         key, input_buffer); 
+    // }
+    // gettimeofday(&end_time, NULL);
+    // dec_time += tool::GetTimeDiff(start_time, end_time);
+    // tool::Logging(myName.c_str(), "finish decryption test.\n");
 
     tool::Logging(myName.c_str(), "test done.\n");
     tool::Logging(myName.c_str(), "encryption (MiB/s): %.3lf\n", (read_buffer_size * TEST_TIME) / MiB_2_B / enc_time);

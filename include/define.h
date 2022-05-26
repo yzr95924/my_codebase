@@ -22,7 +22,7 @@ static const uint64_t MB_2_B = 1000 * 1000;
 static const uint64_t MiB_2_B = uint64_t(1) << 20;
 static const uint64_t KB_2_B = 1000;
 static const uint64_t KiB_2_B = uint64_t(1) << 10;
-static const uint64_t SEC_2_US = 1000 * 1000 * 1000;
+static const uint64_t SEC_2_US = 1000 * 1000;
 
 static const char ALPHABET[] = {'a', 'b', 'c', 'd', 'e', 'f',
                                 'g', 'h', 'i', 'j', 'k', 'l',

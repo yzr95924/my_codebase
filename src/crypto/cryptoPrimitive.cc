@@ -117,6 +117,24 @@ void CryptoPrimitive::EncryptWithKey(EVP_CIPHER_CTX* ctx, uint8_t* dataBuffer, c
             }
             break;
         }
+        case AES_256_CBC: {
+            if (!EVP_EncryptInit_ex(ctx, EVP_aes_256_cbc(), NULL,
+                key, iv_)) {
+                tool::Logging(myName_.c_str(), "init error.\n");
+                exit(EXIT_FAILURE);
+            }
+            EVP_CIPHER_CTX_set_padding(ctx, 1);
+            break;
+        }
+        case AES_128_CBC: {
+            if (!EVP_EncryptInit_ex(ctx, EVP_aes_128_cbc(), NULL,
+                key, iv_)) {
+                tool::Logging(myName_.c_str(), "init error.\n");
+                exit(EXIT_FAILURE);
+            }
+            EVP_CIPHER_CTX_set_padding(ctx, 1);
+            break;
+        }
         case AES_256_GCM: {
             EVP_EncryptInit_ex(ctx, EVP_aes_256_gcm(), NULL, NULL, NULL);
             EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_AEAD_SET_IVLEN, CRYPTO_BLOCK_SIZE, NULL);
@@ -161,7 +179,7 @@ void CryptoPrimitive::EncryptWithKey(EVP_CIPHER_CTX* ctx, uint8_t* dataBuffer, c
                 tool::Logging(myName_.c_str(), "init error.\n");
                 exit(EXIT_FAILURE);
             }
-            EVP_CIPHER_CTX_set_padding(ctx, 0);
+            EVP_CIPHER_CTX_set_padding(ctx, 1);
             break;
         }
         case AES_128_ECB: {
@@ -170,7 +188,7 @@ void CryptoPrimitive::EncryptWithKey(EVP_CIPHER_CTX* ctx, uint8_t* dataBuffer, c
                 tool::Logging(myName_.c_str(), "init error.\n");
                 exit(EXIT_FAILURE);
             }
-            EVP_CIPHER_CTX_set_padding(ctx, 0);
+            EVP_CIPHER_CTX_set_padding(ctx, 1);
             break;
         }
         default: {
@@ -189,7 +207,7 @@ void CryptoPrimitive::EncryptWithKey(EVP_CIPHER_CTX* ctx, uint8_t* dataBuffer, c
     cipherLen += len;
 	
     if (cipherLen != dataSize) {
-        tool::Logging(myName_.c_str(), "encryption output size not equal to origin size"
+        tool::Logging(myName_.c_str(), "encryption output size not equal to origin size: "
             "cipherLen %d, len %d\n", cipherLen, dataSize);
         exit(EXIT_FAILURE);
     }
@@ -226,6 +244,24 @@ void CryptoPrimitive::DecryptWithKey(EVP_CIPHER_CTX* ctx, uint8_t* ciphertext, c
                 tool::Logging(myName_.c_str(), "init error.\n");
                 exit(EXIT_FAILURE);
             }
+            break;
+        }
+        case AES_256_CBC: {
+            if (!EVP_EncryptInit_ex(ctx, EVP_aes_256_cbc(), NULL,
+                key, iv_)) {
+                tool::Logging(myName_.c_str(), "init error.\n");
+                exit(EXIT_FAILURE);
+            }
+            EVP_CIPHER_CTX_set_padding(ctx, 1);
+            break;
+        }
+        case AES_128_CBC: {
+            if (!EVP_EncryptInit_ex(ctx, EVP_aes_128_cbc(), NULL,
+                key, iv_)) {
+                tool::Logging(myName_.c_str(), "init error.\n");
+                exit(EXIT_FAILURE);
+            }
+            EVP_CIPHER_CTX_set_padding(ctx, 1);
             break;
         }
         case AES_128_GCM: {
@@ -272,7 +308,7 @@ void CryptoPrimitive::DecryptWithKey(EVP_CIPHER_CTX* ctx, uint8_t* ciphertext, c
                 tool::Logging(myName_.c_str(), "init error.\n");
                 exit(EXIT_FAILURE);
             }
-            EVP_CIPHER_CTX_set_padding(ctx, 0);
+            EVP_CIPHER_CTX_set_padding(ctx, 1);
             break;
         }
         case AES_128_ECB: {
@@ -281,7 +317,7 @@ void CryptoPrimitive::DecryptWithKey(EVP_CIPHER_CTX* ctx, uint8_t* ciphertext, c
                 tool::Logging(myName_.c_str(), "init error.\n");
                 exit(EXIT_FAILURE);
             }
-            EVP_CIPHER_CTX_set_padding(ctx, 0);
+            EVP_CIPHER_CTX_set_padding(ctx, 1);
             break;
         }
         default: {
@@ -364,5 +400,43 @@ void CryptoPrimitive::GenerateHMAC(EVP_MD_CTX* mdCtx, uint8_t* inputData,
 
     EVP_MD_CTX_reset(mdCtx);
 
+    return ;
+}
+
+/**
+ * @brief test the aes-ecb mode
+ * 
+ * @param ctx cipher ctx
+ * @param dataBuffer input data buffer
+ * @param dataSize input data size
+ * @param key encryption key
+ * @param ciphertext output ciphertext
+ */
+void CryptoPrimitive::TestAESECBEnc(EVP_CIPHER_CTX* ctx, uint8_t* dataBuffer,
+    const int dataSize, uint8_t* key, uint8_t* ciphertext) {
+    int cipherLen = 0;
+    int len = 0;
+
+    if (!EVP_EncryptInit_ex(ctx, EVP_aes_256_ecb(), NULL,
+        key, NULL)) {
+        tool::Logging(myName_.c_str(), "init error.\n");
+        exit(EXIT_FAILURE);
+    }
+    EVP_CIPHER_CTX_set_padding(ctx, 1);
+    uint8_t tmpCipherChunk[MAX_CHUNK_SIZE + CRYPTO_BLOCK_SIZE];
+
+    // encrypt the plaintext
+    if (!EVP_EncryptUpdate(ctx, tmpCipherChunk, &cipherLen, dataBuffer, 
+        dataSize)) {
+        tool::Logging(myName_.c_str(), "encryption error.\n");
+        exit(EXIT_FAILURE);
+    }
+    EVP_EncryptFinal_ex(ctx, tmpCipherChunk + cipherLen, &len);
+    cipherLen += len;
+
+    // copy the data to the buffer
+    memcpy(ciphertext, tmpCipherChunk, dataSize);
+
+    EVP_CIPHER_CTX_reset(ctx);
     return ;
 }

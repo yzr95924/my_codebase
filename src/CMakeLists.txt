@@ -1,5 +1,3 @@
-#set(CMAKE_BUILD_TYPE "Release")
-set(CMAKE_BUILD_TYPE "Debug")
 find_package(Boost 1.36.0 REQUIRED COMPONENTS thread system serialization)
 find_package(OpenSSL REQUIRED)
 
@@ -34,20 +32,6 @@ set(OUTSIDE_OBJ ${SYSTEM_LIB_OBJ} ${BOOST_LIB_OBJ} ${OPENSSL_OBJ})
 set(INSIDE_OBJ chunkingLib compressLib cryptoLib networkLib utilLib)
 set(FINAL_OBJ ${OUTSIDE_OBJ} ${INSIDE_OBJ})
 set(LEARNING_OBJ stdTutorLib boostTutorLib)
-
-set(CMAKE_C_FLAGS_DEBUG "-Wall -g -ggdb") 
-set(CMAKE_C_FLAGS_RELEASE "-O3 -Wall")
-set(CMAKE_CXX_FLAGS_DEBUG "-Wall -g -ggdb -fsanitize=address -O0 -fno-omit-frame-pointer")
-#set(CMAKE_CXX_FLAGS_DEBUG "-Wall -g -ggdb") # for gdb, for valgrind
-set(CMAKE_CXX_FLAGS_RELEASE "-O3 -Wall")
-
-SET (CMAKE_C_COMPILER "/usr/bin/clang")
-SET (CMAKE_CXX_COMPILER "/usr/bin/clang++")
-SET (CMAKE_AR "/usr/bin/llvm-ar")
-SET (CMAKE_LINKER "/usr/bin/llvm-ld")
-SET (CMAKE_NM "/usr/bin/llvm-nm")
-SET (CMAKE_OBJDUMP "/usr/bin/llvm-objdump")
-SET (CMAKE_RANLIB "/usr/bin/llvm-ranlib")
 
 add_subdirectory(multhread)
 add_subdirectory(network)
