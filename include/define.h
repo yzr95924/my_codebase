@@ -13,10 +13,12 @@
 
 #include <sys/time.h>
 #include <sys/resource.h>
+#include <sys/stat.h>
 #include <iomanip>
 #include <bits/stdc++.h>
 #include <getopt.h>
 #include <unistd.h>
+#include <pthread.h>
 
 static const uint64_t MB_2_B = 1000 * 1000;
 static const uint64_t MiB_2_B = uint64_t(1) << 20;
@@ -109,7 +111,10 @@ namespace tool {
         vsnprintf(buf, BUFSIZ, fmt, ap);
         va_end(ap);
         time_t t = std::time(nullptr);
-        std::cerr << std::put_time(std::localtime(&t), "%F %T ") << logger << ":" << buf;
+        stringstream output;
+        output << std::put_time(std::localtime(&t), "%F %T ")
+            << "<" << logger << ">: " << buf;
+        cerr << output.str();
         return ;
     }
 
@@ -162,6 +167,32 @@ namespace tool {
             *pos = ALPHABET[rand() % sizeof(ALPHABET)];
         }
         return ;
+    }
+
+    inline bool FileExist(std::string filePath) {
+        return std::filesystem::is_regular_file(filePath);
+    }
+
+    inline uint64_t GetStrongSeed() {
+        
+        uint64_t a = clock();
+        struct timeval currentTime;
+        gettimeofday(&currentTime, NULL);
+        uint64_t b = currentTime.tv_sec * SEC_2_US + currentTime.tv_usec;
+        uint64_t c = getpid();
+
+        // Robert Jenkins' 96 bit Mix Function
+        a = a - b;  a = a - c;  a = a ^ (c >> 13);
+        b = b - c;  b = b - a;  b = b ^ (a << 8);
+        c = c - a;  c = c - b;  c = c ^ (b >> 13);
+        a = a - b;  a = a - c;  a = a ^ (c >> 12);
+        b = b - c;  b = b - a;  b = b ^ (a << 16);
+        c = c - a;  c = c - b;  c = c ^ (b >> 5);
+        a = a - b;  a = a - c;  a = a ^ (c >> 3);
+        b = b - c;  b = b - a;  b = b ^ (a << 10);
+        c = c - a;  c = c - b;  c = c ^ (b >> 15);
+
+        return c;
     }
 
 } // namespace tool
