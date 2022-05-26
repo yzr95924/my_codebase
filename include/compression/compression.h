@@ -15,17 +15,34 @@
 #include "../constVar.h"
 #include "../define.h"
 
+// for compression header 
 #include <lz4.h>
 #include <zstd.h>
+#include <zlib.h>
 
 using namespace std;
 
 class CompressUtil {
     private:
-        string myName_ = "CompressUtil";
+        string my_name_ = "CompressUtil";
+        uint32_t compress_type_ = 0;
+        uint32_t compress_level_ = 0;
 
     public:
 
+        /**
+         * @brief Construct a new Compress Util object
+         * 
+         * @param compress_type 
+         * @param compress_level 
+         */
+        CompressUtil(uint32_t compress_type, uint32_t compress_level);
+
+        /**
+         * @brief Destroy the Compress Util object
+         * 
+         */
+        ~CompressUtil();
 
 };
 
