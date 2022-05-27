@@ -49,6 +49,9 @@ static const uint32_t PATTERN = 1;
 // the type of chunker
 enum CHUNKER_TYPE {FIXED_SIZE_CHUNKING = 0, FAST_CDC, FSL_TRACE, UBC_TRACE};
 
+// the type of compression type
+enum COMPRESS_TYPE {LZ4_COMPRESS_TYPE = 0, ZSTD_COMPRESS_TYPE, ZLIB_COMPRESS_TYPE};
+
 // the setting of the container
 static const uint32_t MAX_CONTAINER_SIZE = 1 << 22; // container size: 4MB
 static const uint32_t CONTAINER_ID_LENGTH = 8;

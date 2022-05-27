@@ -29,7 +29,6 @@ class CompressUtil {
         uint32_t compress_level_ = 0;
 
     public:
-
         /**
          * @brief Construct a new Compress Util object
          * 
@@ -50,6 +49,19 @@ class CompressUtil {
          */
         bool CompressOneChunk(uint8_t* chunk_data, uint32_t chunk_size, 
             uint8_t* output_data, uint32_t* output_size);
+
+        /**
+         * @brief uncompress a chunk
+         * 
+         * @param compressed_data the compressed data
+         * @param compressed_size the compressed size
+         * @param uncompressed_data the uncompressed data
+         * @param uncompressed_size the uncompressed size
+         * @return true it can compress
+         * @return false it cannot compress
+         */
+        bool DecompressOneChunk(uint8_t* compressed_data, uint32_t compressed_size, 
+            uint8_t* uncompressed_data, uint32_t uncompressed_size);
 
         /**
          * @brief Destroy the Compress Util object
