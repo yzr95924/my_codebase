@@ -12,8 +12,8 @@
 #ifndef MY_CODEBASE_COMPRESS_H
 #define MY_CODEBASE_COMPRESS_H
 
-#include "../constVar.h"
 #include "../define.h"
+#include "../constVar.h"
 
 // for compression header 
 #include <lz4.h>

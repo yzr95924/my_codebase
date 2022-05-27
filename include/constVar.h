@@ -26,7 +26,8 @@ static const char ENCLAVE_PATH[] = "../lib/storeEnclave.signed.so";
 #define MULTI_CLIENT 0
 
 // the length of the hash
-enum ENCRYPT_SET {AES_256_GCM = 0, AES_128_GCM = 1, AES_256_CFB = 2, AES_128_CFB = 3};
+enum ENCRYPT_SET {AES_256_GCM = 0, AES_128_GCM, AES_256_CFB, AES_128_CFB, AES_256_CBC, 
+    AES_128_CBC, AES_256_ECB, AES_128_ECB, AES_256_CTR, AES_128_CTR};
 enum HASH_SET {SHA_256 = 0, MD5 = 1, SHA_1 = 2};
 static const uint32_t CRYPTO_BLOCK_SIZE = 16;
 static const uint32_t CHUNK_HASH_SIZE = 32;
