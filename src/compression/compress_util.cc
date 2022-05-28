@@ -104,8 +104,8 @@ bool CompressUtil::CompressOneChunk(uint8_t* chunk_data, uint32_t chunk_size,
                 tool::Logging(my_name_.c_str(), "zlib init fails.\n");
                 exit(EXIT_FAILURE);
             }
-            ret = deflate(&z_info, compress_level_);
-            if (ret != Z_OK) {
+            ret = deflate(&z_info, Z_FINISH);
+            if (ret != Z_STREAM_END) {
                 // it cannot do compression
                 memcpy(output_data, chunk_data, chunk_size);
                 *output_size = chunk_size;
@@ -129,24 +129,68 @@ bool CompressUtil::CompressOneChunk(uint8_t* chunk_data, uint32_t chunk_size,
  * @param compressed_size the compressed size
  * @param uncompressed_data the uncompressed data
  * @param uncompressed_size the uncompressed size
- * @return true it can compress
- * @return false it cannot compress
  */
-bool CompressUtil::DecompressOneChunk(uint8_t* compressed_data, uint32_t compressed_size, 
-    uint8_t* uncompressed_data, uint32_t uncompressed_size) {  
-    bool success_flag = false;
+void CompressUtil::DecompressOneChunk(uint8_t* compressed_data, uint32_t compressed_size, 
+    uint8_t* uncompressed_data, uint32_t* uncompressed_size) {  
+    int ret = 0;
     switch (compress_type_) {
         case LZ4_COMPRESS_TYPE: {
+            ret = LZ4_decompress_safe((char*)compressed_data, (char*)uncompressed_data, 
+                compressed_size, MAX_CHUNK_SIZE);
+            if (ret <= 0) {
+                // it cannot be decompressed
+                memcpy(uncompressed_data, compressed_data, compressed_size);
+                *uncompressed_size = compressed_size;
+            } else {
+                // it can be decompressed
+                *uncompressed_size = ret;
+            }
             break;
         }
         case ZSTD_COMPRESS_TYPE: {
+            ret = ZSTD_decompress(uncompressed_data, MAX_CHUNK_SIZE, compressed_data,
+                compressed_size);
+            if (ZSTD_isError(ret)) {
+                // it cannot be decompressed
+                memcpy(uncompressed_data, compressed_data, compressed_size);
+                *uncompressed_size = compressed_size;
+            } else {
+                // it can be decompressed
+                *uncompressed_size = ret;
+            }
             break;
         }
         case ZLIB_COMPRESS_TYPE: {
+            // zlib strcut
+            z_stream z_info;
+            z_info.zalloc = Z_NULL;
+            z_info.opaque = Z_NULL;
+            z_info.zfree = Z_NULL;
+            z_info.avail_in = compressed_size;
+            z_info.avail_out = MAX_CHUNK_SIZE;
+            z_info.next_in = compressed_data;
+            z_info.next_out = uncompressed_data;
+
+            // the actual decompression work
+            ret = inflateInit(&z_info);
+            if (ret != Z_OK) {
+                tool::Logging(my_name_.c_str(), "zlib init fails.\n");
+                exit(EXIT_FAILURE);
+            }
+            ret = inflate(&z_info, Z_FINISH);
+            if (ret != Z_STREAM_END) {
+                // it cannot do compression
+                memcpy(uncompressed_data, compressed_data, compressed_size);
+                *uncompressed_size = compressed_size;
+            } else {
+                // it can do compression
+                *uncompressed_size = z_info.total_out;
+            }
+            inflateEnd(&z_info);
             break;
         }
     }
-    return success_flag;
+    return ;
 }
 
 /**

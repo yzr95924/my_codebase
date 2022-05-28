@@ -57,11 +57,9 @@ class CompressUtil {
          * @param compressed_size the compressed size
          * @param uncompressed_data the uncompressed data
          * @param uncompressed_size the uncompressed size
-         * @return true it can compress
-         * @return false it cannot compress
          */
-        bool DecompressOneChunk(uint8_t* compressed_data, uint32_t compressed_size, 
-            uint8_t* uncompressed_data, uint32_t uncompressed_size);
+        void DecompressOneChunk(uint8_t* compressed_data, uint32_t compressed_size, 
+            uint8_t* uncompressed_data, uint32_t* uncompressed_size);
 
         /**
          * @brief Destroy the Compress Util object
