@@ -9,14 +9,14 @@
  * 
  */
 
-#ifndef BASICDEDUP_CRYPTOPRIMITIVE_H
-#define BASICDEDUP_CRYPTOPRIMITIVE_H
+#ifndef MY_CODEBASE_CRYPTO_UTIL_H
+#define MY_CODEBASE_CRYPTO_UTIL_H
 
 #include <openssl/evp.h>
 #include <openssl/crypto.h>
 #include <openssl/err.h>
-#include "dataStructure.h"
-#include "configure.h"
+#include "../dataStructure.h"
+#include "../configure.h"
 
 using namespace std;
 

@@ -1,4 +1,15 @@
-#include "../../include/cryptoPrimitive.h"
+/**
+ * @file crypto_util.cc
+ * @author Zuoru YANG (zryang@cse.cuhk.edu.hk)
+ * @brief implement the interfaces of CryptoUtil
+ * @version 0.1
+ * @date 2022-05-29
+ * 
+ * @copyright Copyright (c) 2022
+ * 
+ */
+
+#include "../../include/crypto/crypto_util.h"
 
 /**
  * @brief Construct a new Crypto Primitive object
