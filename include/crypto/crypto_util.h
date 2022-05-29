@@ -25,91 +25,81 @@ static const unsigned char gcm_aad[] = {
     0x7f, 0xec, 0x78, 0xde
 };
 
-class CryptoPrimitive {
+class CryptoUtil {
     private:
-        string myName_ = "Crypto";
+        string my_name_ = "Crypto";
         // the type of cipher
-        ENCRYPT_SET cipherType_;
+        ENCRYPT_SET cipher_type_;
         // the type of hash 
-        HASH_SET hashType_;
-        
-        // initialized vector
-        uint8_t* iv_;
+        HASH_SET hash_type_;
 
         // update the pKey
-        EVP_PKEY* pKey_;
+        EVP_PKEY* p_key_;
 
     public:
         /**
-         * @brief Construct a new Crypto Primitive object
+         * @brief Construct a new Crypto Util object
          * 
-         * @param cipherType 
-         * @param hashType 
+         * @param cipher_type the cipher type
+         * @param hash_type the hasher type
          */
-        CryptoPrimitive(int cipherType, int hashType);
+        CryptoUtil(int cipher_type, int hash_type);
 
         /**
          * @brief Destroy the Crypto Primitive object
          * 
          */
-        ~CryptoPrimitive();
+        ~CryptoUtil();
 
         /**
-         * @brief Generate the hash of the input data
+         * @brief generate the hash
          * 
-         * @param mdCtx hasher ctx
-         * @param dataBuffer input data buffer
-         * @param dataSize input data size 
-         * @param hash output hash 
+         * @param ctx the hasher ctx
+         * @param data the input data buffer
+         * @param size the input data size
+         * @param hash the output hash <return>
          */
-        void GenerateHash(EVP_MD_CTX* mdCtx, uint8_t* dataBuffer, const int dataSize, uint8_t* hash);
+        void GenerateHash(EVP_MD_CTX* ctx, uint8_t* data, uint32_t size, uint8_t* hash);
 
         /**
-         * @brief Encrypt the data with the encryption key 
+         * @brief encrypt the data with the key and iv
          * 
-         * @param ctx cipher ctx
-         * @param dataBuffer input data buffer
-         * @param dataSize input data size 
-         * @param key encryption key 
-         * @param ciphertext output cipherText 
+         * @param ctx the cipher ctx
+         * @param data the input data buffer
+         * @param size the input data size
+         * @param key the enc key
+         * @param iv the input iv
+         * @param cipher the output cipher <return>
+         * @return uint32_t the cipher size
          */
-        void EncryptWithKey(EVP_CIPHER_CTX* ctx, uint8_t* dataBuffer, const int dataSize, 
-            uint8_t* key, uint8_t* ciphertext);
+        uint32_t EncryptWithKeyIV(EVP_CIPHER_CTX* ctx, uint8_t* data, uint32_t size, 
+            uint8_t* key, uint8_t* iv, uint8_t* cipher);
 
         /**
-         * @brief Decrypt the ciphertext with the encryption key
+         * @brief decrypt the cipher with the key and iv
          * 
-         * @param ctx cipher ctx
-         * @param ciphertext ciphertext data buffer
-         * @param dataSize input data size
-         * @param key encryption key 
-         * @param dataBuffer output ciphertext 
+         * @param ctx the cipher ctx
+         * @param cipher the input cipher buffer
+         * @param size the input cipher size
+         * @param key the dec key
+         * @param iv the input iv
+         * @param data the output data <return>
+         * @return uint32_t the data size
          */
-        void DecryptWithKey(EVP_CIPHER_CTX* ctx, uint8_t* ciphertext, const int dataSize, 
-            uint8_t* key, uint8_t* dataBuffer);
+        uint32_t DecryptWithKeyIV(EVP_CIPHER_CTX* ctx, uint8_t* cipher, const int size, 
+            uint8_t* key, uint8_t* iv, uint8_t* data);
 
         /**
-         * @brief Generate the HMAC of the input data
+         * @brief generate the hmac of the data
          * 
-         * @param mdCtx the mdCtx
-         * @param inputData input data buffer
-         * @param dataSize input data size
-         * @param hMAC the output HMAC
+         * @param ctx the hasher ctx
+         * @param data the input data buffer 
+         * @param size the input data size
+         * @param p_key the private key
+         * @param hmac the output hmac <return>
          */
-        void GenerateHMAC(EVP_MD_CTX* mdCtx, uint8_t* inputData, const int dataSize, 
-            uint8_t* hMAC);
-        
-        /**
-         * @brief test the aes-ecb mode
-         * 
-         * @param ctx cipher ctx
-         * @param dataBuffer input data buffer
-         * @param dataSize input data size
-         * @param key encryption key
-         * @param ciphertext output ciphertext
-         */
-        void TestAESECBEnc(EVP_CIPHER_CTX* ctx, uint8_t* dataBuffer,
-            const int dataSize, uint8_t* key, uint8_t* ciphertext);
+        void GenerateHMAC(EVP_MD_CTX* ctx, uint8_t* data, const int size,
+            EVP_PKEY* p_key, uint8_t* hmac);
 };
 
-#endif //BASICDEDUP_CRYPTOPRIMITIVE_h
+#endif
