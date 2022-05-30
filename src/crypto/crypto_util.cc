@@ -20,6 +20,7 @@
 CryptoUtil::CryptoUtil(int cipher_type, int hash_type) {
     // for openssl optimization
     OPENSSL_init_crypto(0, NULL);
+    ERR_load_crypto_strings();
 
     cipher_type_ = static_cast<ENCRYPT_SET>(cipher_type);
     hash_type_ = static_cast<HASH_SET>(hash_type);
@@ -34,6 +35,7 @@ CryptoUtil::CryptoUtil(int cipher_type, int hash_type) {
  * 
  */
 CryptoUtil::~CryptoUtil() {
+    ERR_free_strings();
     EVP_PKEY_free(p_key_);
 }
 
@@ -205,6 +207,7 @@ uint32_t CryptoUtil::EncryptWithKeyIV(EVP_CIPHER_CTX* ctx, uint8_t* data, uint32
     // encrypt the plaintext
     if (!EVP_EncryptUpdate(ctx, cipher, &cipher_len, data, 
         size)) {
+        ERR_print_errors_fp(stderr);
         tool::Logging(my_name_.c_str(), "encryption error.\n");
         exit(EXIT_FAILURE);
     }
@@ -249,7 +252,7 @@ uint32_t CryptoUtil::DecryptWithKeyIV(EVP_CIPHER_CTX* ctx, uint8_t* cipher, cons
             break;
         }
         case AES_256_CBC: {
-            if (!EVP_EncryptInit_ex(ctx, EVP_aes_256_cbc(), NULL,
+            if (!EVP_DecryptInit_ex(ctx, EVP_aes_256_cbc(), NULL,
                 key, iv)) {
                 tool::Logging(my_name_.c_str(), "init error.\n");
                 exit(EXIT_FAILURE);
@@ -258,7 +261,7 @@ uint32_t CryptoUtil::DecryptWithKeyIV(EVP_CIPHER_CTX* ctx, uint8_t* cipher, cons
             break;
         }
         case AES_128_CBC: {
-            if (!EVP_EncryptInit_ex(ctx, EVP_aes_128_cbc(), NULL,
+            if (!EVP_DecryptInit_ex(ctx, EVP_aes_128_cbc(), NULL,
                 key, iv)) {
                 tool::Logging(my_name_.c_str(), "init error.\n");
                 exit(EXIT_FAILURE);
@@ -325,8 +328,9 @@ uint32_t CryptoUtil::DecryptWithKeyIV(EVP_CIPHER_CTX* ctx, uint8_t* cipher, cons
     }
 
     // decrypt the plaintext
-    if (!EVP_DecryptUpdate(ctx, data, &plain_len, cipher, 
+    if (!EVP_DecryptUpdate(ctx, data, &plain_len, cipher,
         size)) {
+        ERR_print_errors_fp(stderr);
         tool::Logging(my_name_.c_str(), "decrypt error.\n");
         exit(EXIT_FAILURE);
     }

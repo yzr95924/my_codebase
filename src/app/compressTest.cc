@@ -14,11 +14,12 @@
 string my_name = "CompressTest";
 
 void Usage() {
-    fprintf(stderr, "CompressTest -i [inputFile path] -t [compression algo type] -s [chunk size (KiB)] -l [compression level].\n"
-        "\t-t [compression algo type]:\n"
+    fprintf(stderr, "%s -i [input file path] -t [compression algo type] -s [chunk size (KiB)] "
+        "-l [compression level].\n"
+        "-t [compression algo type]:\n"
         "\t0: LZ4\n"
         "\t1: ZSTD\n"
-        "\t2: ZLIB\n");
+        "\t2: ZLIB\n", my_name.c_str());
     return ;
 }
 

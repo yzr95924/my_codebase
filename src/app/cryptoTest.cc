@@ -9,130 +9,244 @@
  * 
  */
 
-#include "../../include/cryptoPrimitive.h"
-struct timeval start_time;
-struct timeval end_time;
+#include "../../include/crypto/crypto_util.h"
 
-const string myName = "CryptoBench";
+const string my_name = "CryptoTest";
 
-static const uint64_t GB = (1 << 30);
-
-void usage() {
-    tool::Logging(myName.c_str(), "cryptoBench [-s message size (byte)]\n");
+void Usage() {
+    fprintf(stderr, "%s -i [input file path] -c [cipher type] -h [hash type] -s [chunk size (KiB)] "
+        "-c [cipher type]:\n"
+        "\tAES-256-GCM: 0\n"
+        "\tAES-128-GCM: 1\n"
+        "\tAES-256-CFB: 2\n"
+        "\tAES-128-CFB: 3\n"
+        "\tAES-256-CBC: 4\n"
+        "\tAES-128-CBC: 5\n"
+        "\tAES-256-ECB: 6\n"
+        "\tAES-128-ECB: 7\n"
+        "\tAES-256-CTR: 8\n"
+        "\tAES-128-CTR: 9\n"
+        "-h [hash type]:\n"
+        "\tSHA-256: 0\n"
+        "\tMD5: 1\n"
+        "\tSHA-1: 2\n", my_name.c_str());
     return ;
 }
 
 int main(int argc, char* argv[]) {
-    uint64_t TEST_DATA_SIZE = GB * 4;
     srand(time(NULL));
-    const char optstring[] = "s:";  
+    const char opt_string[] = "i:c:h:s:";  
     int option;
-    int64_t read_buffer_size;
-    while ((option = getopt(argc, argv, optstring)) != -1) {
-        switch (option) {
-            case 's':
-                read_buffer_size = atoll(optarg);
-                break;
-            case '?':
-                tool::Logging(myName.c_str(), "error optopt: %c\n", optopt);
-                tool::Logging(myName.c_str(), "error opterr: %d\n", opterr);
-                usage();
-                exit(EXIT_FAILURE);
-        }
-    }
-    
-    if (argc != sizeof(optstring)) {
-        tool::Logging(myName.c_str(), "operator number wrong: %d != 6\n", argc);
+    uint32_t chunk_size = 0;
+    ENCRYPT_SET cipher_type;
+    HASH_SET hash_type;
+    string input_path;
+
+    if (argc != sizeof(opt_string)) {
+        tool::Logging(my_name.c_str(), "wrong argc number.\n");
+        Usage();
         exit(EXIT_FAILURE);
     }
 
-    // prepare
-    uint64_t TEST_TIME = TEST_DATA_SIZE / read_buffer_size;
-    CryptoPrimitive* cipher = new CryptoPrimitive(AES_256_CTR, SHA_256);
-    EVP_CIPHER_CTX* cipherCtx = EVP_CIPHER_CTX_new();
-    EVP_MD_CTX* mdCtx = EVP_MD_CTX_new();
-
-    uint8_t* key = (uint8_t*) malloc(sizeof(uint8_t) * 32);
-    memset(key, 1, sizeof(uint8_t) * 32);
-    uint8_t hash[CHUNK_HASH_SIZE];
-    uint8_t* output_buffer = (uint8_t*) malloc(read_buffer_size + CRYPTO_BLOCK_SIZE);
-    uint8_t* input_buffer = (uint8_t*) malloc(read_buffer_size + CRYPTO_BLOCK_SIZE);
-    uint8_t* tmp_buffer = (uint8_t*) malloc(read_buffer_size + CRYPTO_BLOCK_SIZE);
-    int* tmp_ptr = (int*)input_buffer;
-    for (int i = 0; i < (read_buffer_size / sizeof(int)); i++) {
-        *tmp_ptr = rand();
-        tmp_ptr++;
+    while ((option = getopt(argc, argv, opt_string)) != -1) {
+        switch (option) {
+            case 'i': {
+                input_path.assign(optarg);
+                break;
+            }
+            case 'c': {
+                switch (atoi(optarg)) {
+                    case AES_256_GCM: {
+                        cipher_type = AES_256_GCM;
+                        tool::Logging(my_name.c_str(), "using AES-256-GCM.\n");
+                        break;
+                    }
+                    case AES_128_GCM: {
+                        cipher_type = AES_128_GCM;
+                        tool::Logging(my_name.c_str(), "using AES-128-GCM.\n");
+                        break;
+                    }
+                    case AES_256_CFB: {
+                        cipher_type = AES_256_CFB;
+                        tool::Logging(my_name.c_str(), "using AES-256-CFB.\n");
+                        break;
+                    }
+                    case AES_128_CFB: {
+                        cipher_type = AES_128_CFB;
+                        tool::Logging(my_name.c_str(), "using AES-128-CFB.\n");
+                        break;
+                    }
+                    case AES_256_CBC: {
+                        cipher_type = AES_256_CBC;
+                        tool::Logging(my_name.c_str(), "using AES-256-CBC.\n");
+                        break;
+                    }
+                    case AES_128_CBC: {
+                        cipher_type = AES_128_CBC;
+                        tool::Logging(my_name.c_str(), "using AES-128-CBC.\n");
+                        break;
+                    }
+                    case AES_256_ECB: {
+                        cipher_type = AES_256_ECB;
+                        tool::Logging(my_name.c_str(), "using AES-256-ECB.\n");
+                        break;
+                    }
+                    case AES_128_ECB: {
+                        cipher_type = AES_128_ECB;
+                        tool::Logging(my_name.c_str(), "using AES-128-ECB.\n");
+                        break;
+                    }
+                    case AES_256_CTR: {
+                        cipher_type = AES_256_CTR;
+                        tool::Logging(my_name.c_str(), "using AES-256-CTR.\n");
+                        break;
+                    }
+                    case AES_128_CTR: {
+                        cipher_type = AES_128_CTR;
+                        tool::Logging(my_name.c_str(), "using AES-128-CTR.\n");
+                        break;
+                    }
+                    default: {
+                        tool::Logging(my_name.c_str(), "wrong cipher type.\n");
+                        Usage();
+                        exit(EXIT_FAILURE);
+                    }
+                }
+                break;
+            }
+            case 'h': {
+                switch (atoi(optarg)) {
+                    case SHA_256: {
+                        hash_type = SHA_256;
+                        tool::Logging(my_name.c_str(), "using SHA-256.\n");
+                        break;;
+                    }
+                    case MD5: {
+                        hash_type = MD5;
+                        tool::Logging(my_name.c_str(), "using MD5.\n");
+                        break;
+                    }
+                    case SHA_1: {
+                        hash_type = SHA_1;
+                        tool::Logging(my_name.c_str(), "using SHA-1.\n");
+                        break;
+                    }
+                    default: {
+                        tool::Logging(my_name.c_str(), "wrong hash type.\n");
+                        Usage();
+                        exit(EXIT_FAILURE);
+                    }
+                }
+                break;
+            }
+            case 's': {
+                chunk_size = atoi(optarg) * 1024;
+                if (chunk_size > MAX_CHUNK_SIZE) {
+                    tool::Logging(my_name.c_str(), "the input chunk size (%u) is higher than %u\n",
+                        chunk_size, MAX_CHUNK_SIZE);
+                    exit(EXIT_FAILURE);
+                }
+                break;
+            }
+            case '?':
+                tool::Logging(my_name.c_str(), "error optopt: %c\n", optopt);
+                tool::Logging(my_name.c_str(), "error opterr: %d\n", opterr);
+                Usage();
+                exit(EXIT_FAILURE);
+        }
     }
 
-    // preparation done
-    // tool::Logging(myName.c_str(), "check encryption/decryption correctness.\n");
-    // cipher->EncryptWithKey(cipherCtx, input_buffer, read_buffer_size, key, 
-    //     output_buffer);
-    // cipher->DecryptWithKey(cipherCtx, output_buffer, read_buffer_size, key, 
-    //     tmp_buffer);
-    // if (0 != memcmp(input_buffer, tmp_buffer, read_buffer_size)) {
-    //     tool::Logging(myName.c_str(), "encryption/decryption not match.\n");
-    //     exit(EXIT_FAILURE);
-    // } else {
-    //     tool::Logging(myName.c_str(), "encryption/decryption is correct.\n");
-    // }
+    CryptoUtil* crypto_util = new CryptoUtil(cipher_type, hash_type);
 
+    uint8_t input_chunk[MAX_CHUNK_SIZE] = {0};
+    uint8_t enc_chunk[MAX_CHUNK_SIZE + CRYPTO_BLOCK_SIZE] = {0};
+    uint8_t dec_chunk[MAX_CHUNK_SIZE] = {0};
+
+    EVP_CIPHER_CTX* cipher_ctx = EVP_CIPHER_CTX_new();
+    EVP_MD_CTX* md_ctx = EVP_MD_CTX_new();
+    uint8_t key[CHUNK_HASH_SIZE] = {0};
+    memset(key, 2, CHUNK_HASH_SIZE);
+    uint8_t hash[CHUNK_HASH_SIZE] = {0};
+    uint8_t iv[CRYPTO_BLOCK_SIZE] = {0};
+    memset(iv, 1, CRYPTO_BLOCK_SIZE);
+
+    ifstream input_file_hdl;
+    input_file_hdl.open(input_path, ios_base::in | ios_base::binary);
+    if (!input_file_hdl.is_open()) {
+        tool::Logging(my_name.c_str(), "cannot open %s.\n", input_path.c_str());
+        exit(EXIT_FAILURE);
+    }
+
+    bool is_end = false;
+    bool correct_test = true;
+    int read_byte_num = 0;
+    struct timeval stime;
+    struct timeval etime;
     double enc_time = 0;
     double dec_time = 0;
     double hash_time = 0;
-    double hmac_time = 0;
-    tool::Logging(myName.c_str(), "start test.\n");
-    uint8_t tmpCipher[MAX_CHUNK_SIZE];
-    gettimeofday(&start_time, NULL);
-    for (int i = 0; i < TEST_TIME; i++) {
-        cipher->EncryptWithKey(cipherCtx, input_buffer, read_buffer_size, 
-            key, tmpCipher);
-        cipher->TestAESECBEnc(cipherCtx, tmpCipher, read_buffer_size,
-            key, output_buffer);
+
+    uint32_t enc_chunk_size = 0;
+    uint32_t dec_chunk_size = 0;
+    uint64_t total_enc_data_size = 0; 
+    while (!is_end) {
+        input_file_hdl.read((char*)input_chunk, chunk_size);
+        read_byte_num = input_file_hdl.gcount();
+        is_end = input_file_hdl.eof();
+        if (read_byte_num == 0) {
+            break;
+        }
+
+        total_enc_data_size += read_byte_num;
+
+        gettimeofday(&stime, NULL);
+        enc_chunk_size = crypto_util->EncryptWithKeyIV(cipher_ctx, input_chunk, 
+            read_byte_num, key, iv, enc_chunk);
+        gettimeofday(&etime, NULL);
+        enc_time += tool::GetTimeDiff(stime, etime);
+
+        gettimeofday(&stime, NULL);
+        dec_chunk_size = crypto_util->DecryptWithKeyIV(cipher_ctx, enc_chunk,
+            enc_chunk_size, key, iv, dec_chunk);
+        gettimeofday(&etime, NULL);
+        dec_time += tool::GetTimeDiff(stime, etime);
+
+        if (correct_test) {
+            // check the size first
+            tool::Logging(my_name.c_str(), "read byte size: %lu\n", read_byte_num);
+            if (dec_chunk_size != read_byte_num) {
+                tool::Logging(my_name.c_str(), "dec length is not correct.\n");
+                exit(EXIT_FAILURE);
+            } else {
+                if (memcmp(input_chunk, dec_chunk, read_byte_num) != 0) {
+                    tool::Logging(my_name.c_str(), "the dec content is wrong.\n");
+                    exit(EXIT_FAILURE);
+                }
+            }
+            correct_test = false;
+            tool::Logging(my_name.c_str(), "correctness test is passed.\n");
+        }
+
+        gettimeofday(&stime, NULL);
+        crypto_util->GenerateHash(md_ctx, input_chunk, read_byte_num, hash);
+        gettimeofday(&etime, NULL);
+        hash_time += tool::GetTimeDiff(stime, etime);
+
+        if (is_end) {
+            break;
+        }
     }
-    gettimeofday(&end_time, NULL);
-    enc_time += tool::GetTimeDiff(start_time, end_time);
-    tool::Logging(myName.c_str(), "finish encryption test.\n");
 
-    // gettimeofday(&start_time, NULL);
-    // for (int i = 0; i < TEST_TIME; i++) {
-    //     cipher->GenerateHash(mdCtx, input_buffer, read_buffer_size, 
-    //         hash);
-    // }
-    // gettimeofday(&end_time, NULL);
-    // hash_time += tool::GetTimeDiff(start_time, end_time);
-    // tool::Logging(myName.c_str(), "finish hashing test.\n");
+    fprintf(stdout, "--------Test Result--------\n");
+    fprintf(stdout, "enc speed (MiB/s): %lf\n", static_cast<double>(total_enc_data_size) / 
+        1024.0 / 1024.0 / enc_time);
+    fprintf(stdout, "dec speed (MiB/s): %lf\n", static_cast<double>(total_enc_data_size) / 
+        1024.0 / 1024.0 / dec_time);
+    fprintf(stdout, "hash speed (MiB/s): %lf\n", static_cast<double>(total_enc_data_size) / 
+        1024.0 / 1024.0 / hash_time);
 
-    // gettimeofday(&start_time, NULL);
-    // for (int i = 0; i < TEST_TIME; i++) {
-    //     cipher->GenerateHMAC(mdCtx, input_buffer, read_buffer_size,
-    //         hash);
-    // }
-    // gettimeofday(&end_time, NULL);
-    // hmac_time += tool::GetTimeDiff(start_time, end_time);
-    // tool::Logging(myName.c_str(), "finish hmac test.\n");
-
-    // gettimeofday(&start_time, NULL);
-    // for (int i = 0; i < TEST_TIME; i++) {
-    //     cipher->DecryptWithKey(cipherCtx, output_buffer, read_buffer_size, 
-    //         key, input_buffer); 
-    // }
-    // gettimeofday(&end_time, NULL);
-    // dec_time += tool::GetTimeDiff(start_time, end_time);
-    // tool::Logging(myName.c_str(), "finish decryption test.\n");
-
-    tool::Logging(myName.c_str(), "test done.\n");
-    tool::Logging(myName.c_str(), "encryption (MiB/s): %.3lf\n", (read_buffer_size * TEST_TIME) / MiB_2_B / enc_time);
-    tool::Logging(myName.c_str(), "hashing (MiB/s): %.3lf\n", (read_buffer_size * TEST_TIME) / MiB_2_B / hash_time);
-    tool::Logging(myName.c_str(), "HMAC (MiB/s): %.3lf\n", (read_buffer_size * TEST_TIME) / MiB_2_B / hmac_time);
-    tool::Logging(myName.c_str(), "decryption (MiB/s): %.3lf\n", (read_buffer_size * TEST_TIME) / MiB_2_B / dec_time);
-    
-    free(input_buffer);
-    free(output_buffer);
-    free(tmp_buffer);
-    free(key);
-    delete cipher;
-    EVP_CIPHER_CTX_free(cipherCtx);
-    EVP_MD_CTX_free(mdCtx);
+    delete crypto_util;
+    EVP_CIPHER_CTX_free(cipher_ctx);
+    EVP_MD_CTX_free(md_ctx);
     return 0;
 }

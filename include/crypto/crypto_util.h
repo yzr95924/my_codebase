@@ -36,6 +36,7 @@ class CryptoUtil {
         // update the pKey
         EVP_PKEY* p_key_;
 
+
     public:
         /**
          * @brief Construct a new Crypto Util object

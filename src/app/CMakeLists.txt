@@ -1,5 +1,5 @@
-add_executable(cryptoBench cryptoTest.cc)
-target_link_libraries(cryptoBench ${FINAL_OBJ})
+add_executable(CryptoTest cryptoTest.cc)
+target_link_libraries(CryptoTest ${FINAL_OBJ})
 
 add_executable(CompressTest compressTest.cc)
 target_link_libraries(CompressTest ${FINAL_OBJ})
