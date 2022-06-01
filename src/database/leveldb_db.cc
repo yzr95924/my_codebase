@@ -9,66 +9,50 @@
  * 
  */
 
-#include "../../include/leveldbDatabase.h"
+#include "../../include/database/leveldb_db.h"
 
 /**
  * @brief Construct a new Database object
  * 
- * @param dbName the path of the db file
+ * @param db_name the path of the db file
  */
-LeveldbDatabase::LeveldbDatabase(std::string dbName) {
-    this->OpenDB(dbName);
+LeveldbDatabase::LeveldbDatabase(string db_name) {
+    this->OpenDB(db_name);
 }
 
 /**
- * @brief execute query over database
+ * @brief Destroy the Database:: Database object
  * 
- * @param key key
- * @param value value
- * @return true success
- * @return false fail
  */
-bool LeveldbDatabase::Query(const std::string& key, std::string& value) {
-    leveldb::Status queryStatus = this->levelDBObj_->Get(leveldb::ReadOptions(), key, &value);
-    return queryStatus.ok();
-}
-
-
-/**
- * @brief insert the (key, value) pair
- * 
- * @param key key
- * @param value value
- * @return true success
- * @return false fail
- */
-bool LeveldbDatabase::Insert(const std::string& key, const std::string& value) {
-    leveldb::Status insertStatus = this->levelDBObj_->Put(leveldb::WriteOptions(), key, value); 
-    return insertStatus.ok();
+LeveldbDatabase::~LeveldbDatabase() {
+    string name = "." + db_name_ + ".lock";
+    remove(name.c_str());
+    delete level_db_obj_;
+    delete options_.block_cache;
 }
 
 /**
  * @brief open a database
  * 
- * @param dbName the db path 
+ * @param db_name the db path 
  * @return true success
  * @return false fail
  */
-bool LeveldbDatabase::OpenDB(std::string dbName) {
-
+bool LeveldbDatabase::OpenDB(string db_name) {
     // check whether there exists a lock for the given database
-    fstream dbLock;
-    dbLock.open("." + dbName + ".lock", std::fstream::in);
-    if (dbLock.is_open()) {
-        dbLock.close();
-        fprintf(stderr, "Database lock.\n");
+    fstream db_lock;
+    db_lock.open("." + db_name + ".lock", std::fstream::in);
+    if (db_lock.is_open()) {
+        db_lock.close();
+        tool::Logging(my_name_.c_str(), "database lock.\n");
         return false;
     }
-    dbName_ = dbName;
+    db_name_ = db_name;
 
     options_.create_if_missing = true;
-    options_.block_cache = leveldb::NewLRUCache(256 * 1024 * 1024); // 256MB cache
-    leveldb::Status status = leveldb::DB::Open(options_, dbName, &this->levelDBObj_);
+    options_.block_cache = leveldb::NewLRUCache(256 * 1024 * 1024); // 256M cache
+    leveldb::Status status = leveldb::DB::Open(options_, db_name_,
+        &this->level_db_obj_);
     assert(status.ok());
     if (status.ok()) {
         return true;
@@ -78,62 +62,74 @@ bool LeveldbDatabase::OpenDB(std::string dbName) {
 }
 
 /**
- * @brief Destroy the Database:: Database object
+ * @brief execute query over database
  * 
+ * @param key key
+ * @param value value
+ * @return true exist
+ * @return false not exist
  */
-LeveldbDatabase::~LeveldbDatabase() {
-    string name = "." + dbName_ + ".lock";
-    remove(name.c_str());
-    delete levelDBObj_;
-    delete options_.block_cache;
+bool LeveldbDatabase::Query(const string& key, string& value) {
+    leveldb::Status query_stat = this->level_db_obj_->Get(leveldb::ReadOptions(), key, &value);
+    return query_stat.ok();
 }
-
 
 /**
  * @brief insert the (key, value) pair
  * 
- * @param key 
- * @param buffer 
- * @param bufferSize 
- * @return true 
- * @return false 
+ * @param key key
+ * @param value value
+ * @return true exist
+ * @return false not exist
  */
-bool LeveldbDatabase::InsertBuffer(const std::string& key, const char* buffer, size_t bufferSize) {
-    leveldb::Status insertStatus = this->levelDBObj_->Put(leveldb::WriteOptions(),
-        key, leveldb::Slice(buffer, bufferSize));
-    return insertStatus.ok();
+bool LeveldbDatabase::Insert(const string& key, const string& value) {
+    leveldb::Status insert_stat = this->level_db_obj_->Put(leveldb::WriteOptions(), key, value); 
+    return insert_stat.ok();
 }
-
-
 
 /**
  * @brief insert the (key, value) pair
  * 
- * @param key 
- * @param keySize 
- * @param buffer 
- * @param bufferSize 
- * @return true 
- * @return false 
+ * @param key the key 
+ * @param buf the value buffer
+ * @param buf_size the buffer size
+ * @return true exist
+ * @return false not exist
  */
-bool LeveldbDatabase::InsertBothBuffer(const char* key, size_t keySize, const char* buffer,
-    size_t bufferSize) {
-    leveldb::Status insertStatus = this->levelDBObj_->Put(leveldb::WriteOptions(),
-        leveldb::Slice(key, keySize), leveldb::Slice(buffer, bufferSize));
-    return insertStatus.ok();
+bool LeveldbDatabase::InsertBuffer(const string& key, const char* buf, size_t buf_size) {
+    leveldb::Status insert_stat = this->level_db_obj_->Put(leveldb::WriteOptions(),
+        key, leveldb::Slice(buf, buf_size));
+    return insert_stat.ok();
+}
+
+/**
+ * @brief insert the (key, value) pair
+ * 
+ * @param key the key
+ * @param key_size the key size
+ * @param buf the value buffer
+ * @param buf_size the buffer size
+ * @return true exist
+ * @return false not exist
+ */
+bool LeveldbDatabase::InsertBothBuffer(const char* key, size_t key_size, const char* buf,
+    size_t buf_size) {
+    leveldb::Status insert_stat = this->level_db_obj_->Put(leveldb::WriteOptions(),
+        leveldb::Slice(key, key_size), leveldb::Slice(buf, buf_size));
+    return insert_stat.ok();
 }
 
 /**
  * @brief query the (key, value) pair
  * 
- * @param key 
- * @param keySize 
- * @param value 
- * @return true 
- * @return false 
+ * @param key the key
+ * @param key_size the key size
+ * @param value the value
+ * @return true exist
+ * @return false not exist
  */
-bool LeveldbDatabase::QueryBuffer(const char* key, size_t keySize, std::string& value) {
-    leveldb::Status queryStatus = this->levelDBObj_->Get(leveldb::ReadOptions(),
-        leveldb::Slice(key, keySize), &value);
-    return queryStatus.ok();
+bool LeveldbDatabase::QueryBuffer(const char* key, size_t key_size, string& value) {
+    leveldb::Status query_stat = this->level_db_obj_->Get(leveldb::ReadOptions(),
+        leveldb::Slice(key, key_size), &value);
+    return query_stat.ok();
 }

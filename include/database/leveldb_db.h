@@ -19,8 +19,9 @@
 
 class LeveldbDatabase : public AbsDatabase {
     protected:
+        string my_name_ = "LeveldbDatabase";
         /* data */
-        leveldb::DB* level_db_Obj_ = NULL;
+        leveldb::DB* level_db_obj_ = NULL;
         leveldb::Options options_;
 
     public:
@@ -54,7 +55,7 @@ class LeveldbDatabase : public AbsDatabase {
          * @return true exist
          * @return false not exist
          */
-        bool Query(const string& key, string& value) = 0;
+        bool Query(const string& key, string& value);
 
         /**
          * @brief insert the (key, value) pair

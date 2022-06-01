@@ -41,6 +41,7 @@ add_subdirectory(chunking)
 add_subdirectory(util)
 add_subdirectory(crypto)
 add_subdirectory(compression)
+add_subdirectory(database)
 
 # for learning
 add_subdirectory(boost_tutor)

@@ -66,7 +66,7 @@ bool InMemoryDatabase::OpenDB(string db_name) {
 
     if (fileSize == 0) {
         // db file not exist
-        tool::Logging(my_name_.c_str(), "db file file not exists, create a new one.\n");
+        tool::Logging(my_name_.c_str(), "db file file not exist, create a new one.\n");
     } else {
         // db file exist, load
         db_file.seekg(0, ios_base::beg);
@@ -118,8 +118,10 @@ bool InMemoryDatabase::Query(const string& key, string& value) {
         // it exists in the index
         value.assign(find_ret->second);
         return true;
-    } 
-    return false;
+    } else {
+        // it does not exist
+        return false;
+    }
 }
 
 /**
@@ -127,68 +129,69 @@ bool InMemoryDatabase::Query(const string& key, string& value) {
  * 
  * @param key key
  * @param value value
- * @return true success
- * @return false fail
+ * @return true exist
+ * @return false not exist
  */
-bool InMemoryDatabase::Insert(const std::string& key, const std::string& value) {
-    indexObj_[key] = value;
-    return true;
-}
-
-
-/**
- * @brief insert the (key, value) pair
- * 
- * @param key 
- * @param buffer 
- * @param bufferSize 
- * @return true 
- * @return false 
- */
-bool InMemoryDatabase::InsertBuffer(const std::string& key, const char* buffer, size_t bufferSize) {
-    string valueStr;
-    valueStr.assign(buffer, bufferSize);
-    indexObj_[key] = valueStr;
+bool InMemoryDatabase::Insert(const string& key, const string& value) {
+    index_obj_[key] = value;
     return true;
 }
 
 /**
  * @brief insert the (key, value) pair
  * 
- * @param key 
- * @param keySize 
- * @param buffer 
- * @param bufferSize 
- * @return true 
- * @return false 
+ * @param key the key 
+ * @param buf the value buffer
+ * @param buf_size the buffer size
+ * @return true exist
+ * @return false not exist
  */
-bool InMemoryDatabase::InsertBothBuffer(const char* key, size_t keySize, const char* buffer,
-    size_t bufferSize) {
-    string keyStr;
-    string valueStr;
-    keyStr.assign(key, keySize);
-    valueStr.assign(buffer, bufferSize);
-    indexObj_[keyStr] = valueStr;
+bool InMemoryDatabase::InsertBuffer(const string& key, const char* buf, size_t buf_size) {
+    string value_str;
+    value_str.assign(buf, buf_size);
+    index_obj_[key] = value_str;
+    return true;
+}
+
+/**
+ * @brief insert the (key, value) pair
+ * 
+ * @param key the key
+ * @param key_size the key size
+ * @param buf the value buffer
+ * @param buf_size the buffer size
+ * @return true exist
+ * @return false not exist
+ */
+bool InMemoryDatabase::InsertBothBuffer(const char* key, size_t key_size, const char* buf,
+    size_t buf_size) {
+    string key_str;
+    string value_str;
+    key_str.assign(key, key_size);
+    value_str.assign(buf, buf_size);
+    index_obj_[key_str] = value_str;
     return true;
 }
 
 /**
  * @brief query the (key, value) pair
  * 
- * @param key 
- * @param keySize 
- * @param value 
- * @return true 
- * @return false 
+ * @param key the key
+ * @param key_size the key size
+ * @param value the value
+ * @return true exist
+ * @return false not exist
  */
-bool InMemoryDatabase::QueryBuffer(const char* key, size_t keySize, std::string& value) {
-    string keyStr;
-    keyStr.assign(key, keySize);
-    auto findResult = indexObj_.find(keyStr);
-    if (findResult != indexObj_.end()) {
+bool InMemoryDatabase::QueryBuffer(const char* key, size_t key_size, string& value) {
+    string key_str;
+    key_str.assign(key, key_size);
+    auto find_ret = index_obj_.find(key_str);
+    if (find_ret != index_obj_.end()) {
         // it exists in the index
-        value.assign(findResult->second);
+        value.assign(find_ret->second);
         return true;
+    } else {
+        // it does not exist
+        return false;
     }
-    return false;
 }

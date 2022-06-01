@@ -41,7 +41,7 @@ class InMemoryDatabase : public AbsDatabase {
          * @return true success
          * @return false fail
          */
-        virtual bool OpenDB(string db_name) = 0;
+        bool OpenDB(string db_name);
 
         /**
          * @brief execute query over database
