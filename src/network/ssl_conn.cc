@@ -9,7 +9,7 @@
  * 
  */
 
-#include "../../include/comm/ssl_conn.h"
+#include "../../include/network/ssl_conn.h"
 
 /**
  * @brief Construct a new SSLConnection object
@@ -124,9 +124,10 @@ SSLConnection::~SSLConnection() {
 /**
  * @brief finalize the connection
  * 
+ * @param ssl_pair the pair of the server socket and ssl context
  */
-void SSLConnection::Finish(pair<int, SSL*> sslPair) {
-    int ret = SSL_shutdown(sslPair.second);
+void SSLConnection::Finish(pair<int, SSL*> ssl_pair) {
+    int ret = SSL_shutdown(ssl_pair.second);
     if (ret != 0) {
         tool::Logging(my_name_.c_str(), "first shutdown the socket in client side error, "
                 "ret: %d\n", ret);
@@ -134,18 +135,18 @@ void SSLConnection::Finish(pair<int, SSL*> sslPair) {
     }
 
     // check the ssl shutdown flag state
-    if ((SSL_get_shutdown(sslPair.second) & SSL_SENT_SHUTDOWN) != 1) {
+    if ((SSL_get_shutdown(ssl_pair.second) & SSL_SENT_SHUTDOWN) != 1) {
         tool::Logging(my_name_.c_str(), "set the sent shutdown flag error.\n");
     }
 
     // wait the close alert from another peer
     int tmp;
-    int retStatus;
-    retStatus = SSL_read(sslPair.second, (uint8_t*)&tmp, sizeof(tmp));
-    if (SSL_get_error(sslPair.second, retStatus) != SSL_ERROR_ZERO_RETURN) {
+    int ret_stat;
+    ret_stat = SSL_read(ssl_pair.second, (uint8_t*)&tmp, sizeof(tmp));
+    if (SSL_get_error(ssl_pair.second, ret_stat) != SSL_ERROR_ZERO_RETURN) {
         tool::Logging(my_name_.c_str(), "receive shutdown flag error.\n");
     }
-    tmp = SSL_shutdown(sslPair.second);
+    tmp = SSL_shutdown(ssl_pair.second);
     if (tmp != 1) {
         tool::Logging(my_name_.c_str(), "shutdown the ssl socket fail, ret: %d\n", tmp);
         exit(EXIT_FAILURE);
@@ -153,19 +154,19 @@ void SSLConnection::Finish(pair<int, SSL*> sslPair) {
 
     tool::Logging(my_name_.c_str(), "shutdown the SSL connection successfully.\n");
 
-    SSL_free(sslPair.second);
-    close(sslPair.first);
+    SSL_free(ssl_pair.second);
+    close(ssl_pair.first);
     return ;
 }
 
 /**
  * @brief clear the corresponding accepted client socket and context
  * 
- * @param SSLPtr the pointer to the SSL* of accepted client
+ * @param ssl_ptr the pointer to the SSL* of accepted client
  */
-void SSLConnection::ClearAcceptedClientSd(SSL* SSLPtr) {
-    int sd = SSL_get_fd(SSLPtr);
-    SSL_free(SSLPtr);
+void SSLConnection::ClearAcceptedClientSd(SSL* ssl_ptr) {
+    int sd = SSL_get_fd(ssl_ptr);
+    SSL_free(ssl_ptr);
     close(sd);
     return ;
 }
@@ -176,30 +177,30 @@ void SSLConnection::ClearAcceptedClientSd(SSL* SSLPtr) {
  * @return pair<int, SSL*> 
  */
 pair<int, SSL*> SSLConnection::ConnectSSL() {
-    int socketFd;
-    SSL* sslConnectionPtr;
+    int socket_fd;
+    SSL* ssl_ptr;
     
-    socketFd = socket(AF_INET, SOCK_STREAM, 0);
-    if (connect(socketFd, (struct sockaddr*)&socket_addr_, sizeof(socket_addr_)) < 0) {
+    socket_fd = socket(AF_INET, SOCK_STREAM, 0);
+    if (connect(socket_fd, (struct sockaddr*)&socket_addr_, sizeof(socket_addr_)) < 0) {
         tool::Logging(my_name_.c_str(), "cannot connect on the socket: %s.\n", strerror(errno));
         exit(EXIT_FAILURE);
     }
 
-    sslConnectionPtr = SSL_new(ssl_ctx_);
-    if (!SSL_set_fd(sslConnectionPtr, socketFd)) {
+    ssl_ptr = SSL_new(ssl_ctx_);
+    if (!SSL_set_fd(ssl_ptr, socket_fd)) {
         tool::Logging(my_name_.c_str(), "cannot combine the fd and ssl.\n");
         ERR_print_errors_fp(stderr);
         exit(EXIT_FAILURE);
     }
     
     // start the SSL handshake 
-    if (SSL_connect(sslConnectionPtr) != 1) {
+    if (SSL_connect(ssl_ptr) != 1) {
         tool::Logging(my_name_.c_str(), "ssl connect fails.\n");
         ERR_print_errors_fp(stderr);
         exit(EXIT_FAILURE);
     } 
 
-    return make_pair(socketFd, sslConnectionPtr);
+    return make_pair(socket_fd, ssl_ptr);
 }
 
 /**
@@ -208,68 +209,67 @@ pair<int, SSL*> SSLConnection::ConnectSSL() {
  * @return pair<int, SSL*> 
  */
 pair<int, SSL*> SSLConnection::ListenSSL() {
-    int socketFd;
-    struct sockaddr_in clientAddr;
-    socklen_t clientAddrLen = sizeof(clientAddr);
-    socketFd = accept(listen_fd_, (struct sockaddr*)&clientAddr, &clientAddrLen); 
+    int socket_fd;
+    struct sockaddr_in client_addr;
+    socklen_t client_addr_len = sizeof(client_addr);
+    socket_fd = accept(listen_fd_, (struct sockaddr*)&client_addr, &client_addr_len); 
 
-    if (socketFd < 0) {
+    if (socket_fd < 0) {
         tool::Logging(my_name_.c_str(), "socket listen fails: %s\n", strerror(errno));
         exit(EXIT_FAILURE);
     }
 
-    SSL* sslConnectionPtr = SSL_new(ssl_ctx_);
-    if (!SSL_set_fd(sslConnectionPtr, socketFd)) {
+    SSL* ssl_ptr = SSL_new(ssl_ctx_);
+    if (!SSL_set_fd(ssl_ptr, socket_fd)) {
         tool::Logging(my_name_.c_str(), "cannot combine the fd and ssl.\n");
         ERR_print_errors_fp(stderr);
         exit(EXIT_FAILURE);
     }
 
-    if (SSL_accept(sslConnectionPtr) != 1) {
+    if (SSL_accept(ssl_ptr) != 1) {
         tool::Logging(my_name_.c_str(), "accept the connection fails.\n");
         ERR_print_errors_fp(stderr);
         exit(EXIT_FAILURE);
     }
 
-    return make_pair(socketFd, sslConnectionPtr);
+    return make_pair(socket_fd, ssl_ptr);
 }
 
 /**
  * @brief send the data to the given connection
  * 
- * @param connection the pointer to the connection
+ * @param ssl_conn the pointer to the connection
  * @param data the pointer to the data buffer
- * @param dataSize the size of the input data
+ * @param size the size of the input data
  * @return true success
  * @return false fail
  */
-bool SSLConnection::SendData(SSL* connection, uint8_t* data, uint32_t dataSize) {
-    int writeStatus;
-    writeStatus = SSL_write(connection, (char*)&dataSize, sizeof(uint32_t));
-    if (writeStatus <= 0) {
-        tool::Logging(my_name_.c_str(), "write the data fails. ret: %d\n", SSL_get_error(connection, writeStatus));
+bool SSLConnection::SendData(SSL* ssl_conn, uint8_t* data, uint32_t size) {
+    int write_stat;
+    write_stat = SSL_write(ssl_conn, (char*)&size, sizeof(uint32_t));
+    if (write_stat <= 0) {
+        tool::Logging(my_name_.c_str(), "write the data fails. ret: %d\n",
+            SSL_get_error(ssl_conn, write_stat));
         ERR_print_errors_fp(stderr);
         return false;
     }
 
-    int sendedSize = 0;
-    while (sendedSize < dataSize) {
-        sendedSize += SSL_write(connection, data + sendedSize, dataSize - sendedSize);
+    int current_send_size = 0;
+    while (current_send_size < size) {
+        write_stat = SSL_write(ssl_conn, data + current_send_size,
+            size - current_send_size);
+        if (write_stat <= 0) {
+            tool::Logging(my_name_.c_str(), "write the data fails. ret: %d\n",
+                SSL_get_error(ssl_conn, write_stat));
+            ERR_print_errors_fp(stderr);
+            return false;
+        }
+        current_send_size += write_stat;
     }
 
     return true;
-
 }
 
-/**
- * @brief receive the data from the given connection
- * 
- * @param connection the pointer to the connection
- * @param data the pointer to the data buffer
- * @param receiveDataSize the size of received data 
- * @return true success
- * @return false fail
- */
 /**
  * @brief receive the data from the given connection
  * 
@@ -280,12 +280,11 @@ bool SSLConnection::SendData(SSL* connection, uint8_t* data, uint32_t dataSize) 
  * @return false fail
  */
 bool SSLConnection::ReceiveData(SSL* ssl_conn, uint8_t* data, uint32_t& recv_size) {
-    int current_recv_size = 0;
-    int len = 0;
-    int read_status;
-    read_status = SSL_read(ssl_conn, (char*)&len, sizeof(int));
-    if (read_status <= 0) {
-        if (SSL_get_error(ssl_conn, read_status) == SSL_ERROR_ZERO_RETURN) {
+    uint32_t msg_size = 0;
+    int read_stat;
+    read_stat = SSL_read(ssl_conn, (char*)&msg_size, sizeof(uint32_t));
+    if (read_stat <= 0) {
+        if (SSL_get_error(ssl_conn, read_stat) == SSL_ERROR_ZERO_RETURN) {
             tool::Logging(my_name_.c_str(), "TLS/SSL peer has closed the connection.\n");
             // also close this connection 
             SSL_shutdown(ssl_conn);
@@ -294,10 +293,19 @@ bool SSLConnection::ReceiveData(SSL* ssl_conn, uint8_t* data, uint32_t& recv_siz
         return false;
     }
 
-    while (current_recv_size < len) {
-        current_recv_size += SSL_read(ssl_conn, data + current_recv_size,
-            len - current_recv_size);
+    int current_recv_size = 0;
+    while (current_recv_size < msg_size) {
+        read_stat = SSL_read(ssl_conn, data + current_recv_size,
+            msg_size - current_recv_size);
+        if (read_stat <= 0) {
+            tool::Logging(my_name_.c_str(), "read the data fails. ret: %d\n",
+                SSL_get_error(ssl_conn, read_stat));
+            ERR_print_errors_fp(stderr);
+            return false;
+        }
+        current_recv_size += read_stat;
     }
-    recv_size = len;
+    recv_size = msg_size;
+
     return true;
 }

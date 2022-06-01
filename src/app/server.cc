@@ -10,7 +10,7 @@
  */
 
 #include <signal.h> // to catch the signal
-#include "../../include/sslConnection.h"
+#include "../../include/network/ssl_conn.h"
 
 SSLConnection* sslHandler;
 
@@ -22,9 +22,7 @@ void CTRLC(int s) {
     return ;
 }
 
-
-int main(int argc, char* argv[])
-{
+int main(int argc, char* argv[]) {
     struct sigaction sigIntHandler;
     sigIntHandler.sa_handler = SIG_IGN;
     sigaction(SIGPIPE, &sigIntHandler, 0);

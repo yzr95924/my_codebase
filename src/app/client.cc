@@ -9,7 +9,7 @@
  * 
  */
 
-#include "../../include/sslConnection.h"
+#include "../../include/network/ssl_conn.h"
 #include "../../include/configure.h"
 
 

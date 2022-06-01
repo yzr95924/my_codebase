@@ -67,9 +67,9 @@ mkdir client
 mkdir certDER
 
 # private key generation
-openssl genrsa -out ca.key 1024
-openssl genrsa -out server.key 1024
-openssl genrsa -out client.key 1024
+openssl genrsa -out ca.key 2048
+openssl genrsa -out server.key 2048
+openssl genrsa -out client.key 2048
 
 # cert requests
 openssl req -out ca.req -key ca.key -new \
@@ -81,12 +81,12 @@ openssl req -out client.req -key client.key -new \
 
 # generate the actual certs.
 openssl x509 -req -in ca.req -out ca.crt \
-            -sha1 -days 5000 -signkey ca.key
+            -sha256 -days 5000 -signkey ca.key
 openssl x509 -req -in server.req -out server.crt \
-            -sha1 -CAcreateserial -days 5000 \
+            -sha256 -CAcreateserial -days 5000 \
             -CA ca.crt -CAkey ca.key
 openssl x509 -req -in client.req -out client.crt \
-            -sha1 -CAcreateserial -days 5000 \
+            -sha256 -CAcreateserial -days 5000 \
             -CA ca.crt -CAkey ca.key
  
 openssl x509 -in ca.crt -outform DER -out ca.der
