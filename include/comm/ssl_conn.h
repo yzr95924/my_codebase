@@ -1,5 +1,5 @@
 /**
- * @file sslConnection.hj
+ * @file ssl_conn.h
  * @author Zuoru YANG (zryang@cse.cuhk.edu.hk)
  * @brief define the interface of ssl connection
  * @version 0.1
@@ -9,10 +9,10 @@
  * 
  */
 
-#ifndef SSL_CONNECTION_H
-#define SSL_CONNECTION_H
+#ifndef MY_CODEBASE_SSL_CONNECTION_H
+#define MY_CODEBASE_SSL_CONNECTION_H
 
-#include "configure.h"
+#include "../configure.h"
 
 #include <netinet/in.h> // for sockaddr_in 
 #include <sys/socket.h>
@@ -23,24 +23,23 @@
 #include <openssl/ssl.h>
 #include <openssl/err.h>
 
-using namespace std;
-
 class SSLConnection {
     private:
+        string my_name_ = "SSLConnection";
         // the socket address
-        struct sockaddr_in socketAddr_;
+        struct sockaddr_in socket_addr_;
 
         // server ip
-        string serverIP_;
+        string server_ip_;
 
         // the port 
         int port_;
 
         // ssl context pointer
-        SSL_CTX* sslCtx_ = NULL;
+        SSL_CTX* ssl_ctx_ = NULL;
 
         // the listen file descriptor
-        int listenFd_;
+        int listen_fd_;
 
     public:
         /**
@@ -61,16 +60,16 @@ class SSLConnection {
         /**
          * @brief finalize the connection
          * 
-         * @param sslPair the pair of the server socket and ssl context
+         * @param ssl_pair the pair of the server socket and ssl context
          */
-        void Finish(pair<int, SSL*> sslPair);
+        void Finish(pair<int, SSL*> ssl_pair);
 
         /**
          * @brief clear the corresponding accepted client socket and context
          * 
-         * @param SSLPtr the pointer to the SSL* of accepted client
+         * @param ssl_ptr the pointer to the SSL* of accepted client
          */
-        void ClearAcceptedClientSd(SSL* SSLPtr);
+        void ClearAcceptedClientSd(SSL* ssl_ptr);
 
         /**
          * @brief connect to ssl
@@ -89,13 +88,13 @@ class SSLConnection {
         /**
          * @brief send the data to the given connection
          * 
-         * @param connection the pointer to the connection
+         * @param ssl_conn the pointer to the connection
          * @param data the pointer to the data buffer
-         * @param dataSize the size of the input data
+         * @param size the size of the input data
          * @return true success
          * @return false fail
          */
-        bool SendData(SSL* connection, uint8_t* data, uint32_t dataSize);
+        bool SendData(SSL* ssl_conn, uint8_t* data, uint32_t size);
 
         /**
          * @brief receive the data from the given connection
@@ -106,25 +105,32 @@ class SSLConnection {
          * @return true success
          * @return false fail
          */
-        bool ReceiveData(SSL* connection, uint8_t* data, uint32_t& receiveDataSize);
+        bool ReceiveData(SSL* ssl_conn, uint8_t* data, uint32_t& recv_size);
 
         /**
          * @brief Get the Listen Fd object
          * 
          * @return int the listenFd
          */
-        inline int GetListenFd() {
-            return this->listenFd_;
+        int GetListenFd() {
+            return this->listen_fd_;
         }
 
         /**
          * @brief Get the Client Ip object
          * 
          * @param ip the ip of the client 
-         * @param clientConnection the SSL connection of the client
+         * @param client_ssl the SSL connection of the client
          */
-        void GetClientIp(string& ip, SSL* clientConnection);
-
+        void GetClientIp(string& ip, SSL* client_ssl) {
+            int client_fd = SSL_get_fd(client_ssl);
+            struct sockaddr_in client_addr;
+            socklen_t client_addr_len = sizeof(client_addr);
+            getpeername(client_fd, (struct sockaddr*)&client_addr, &client_addr_len);
+            ip.resize(INET_ADDRSTRLEN, 0);
+            inet_ntop(AF_INET, &(client_addr.sin_addr), &ip[0], INET_ADDRSTRLEN);
+            return ;
+        }
 };
 
 #endif

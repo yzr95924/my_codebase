@@ -20,7 +20,6 @@
 CryptoUtil::CryptoUtil(int cipher_type, int hash_type) {
     // for openssl optimization
     OPENSSL_init_crypto(0, NULL);
-    ERR_load_crypto_strings();
 
     cipher_type_ = static_cast<ENCRYPT_SET>(cipher_type);
     hash_type_ = static_cast<HASH_SET>(hash_type);
@@ -35,7 +34,6 @@ CryptoUtil::CryptoUtil(int cipher_type, int hash_type) {
  * 
  */
 CryptoUtil::~CryptoUtil() {
-    ERR_free_strings();
     EVP_PKEY_free(p_key_);
 }
 

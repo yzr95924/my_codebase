@@ -35,7 +35,7 @@ int main(int argc, char* argv[])
     
     string serverIp = "127.0.0.1";
     int port = 16666;
-    sslHandler = new SSLConnection(serverIp, port, IN_SERVERSIDE);
+    sslHandler = new SSLConnection(serverIp, port, IN_SERVER_SIDE);
     pair<int, SSL*> connectionRecord;
 
     int recvData;

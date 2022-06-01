@@ -19,7 +19,7 @@ int main(int argc, char* argv[])
     // config the parameter
     int port = 16666;
     string serverIp = "127.0.0.1";
-    SSLConnection* sslConnectionHandler = new SSLConnection(serverIp, port, IN_CLIENTSIDE);
+    SSLConnection* sslConnectionHandler = new SSLConnection(serverIp, port, IN_CLIENT_SIDE);
     newSSLConnectionRecord = sslConnectionHandler->ConnectSSL();
 
     int sendData = 95924;
