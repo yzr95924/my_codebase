@@ -9,13 +9,12 @@
  * 
  */
 
-#include "../../include/absDatabase.h"
-
+#include "../../include/database/abs_db.h"
 
 /**
  * @brief Construct a new Abs Database object
  * 
  */
 AbsDatabase::AbsDatabase() {
-    // fprintf(stderr, "AbsDatabase: Initial an abstract database.\n");
+
 }

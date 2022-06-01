@@ -1,5 +1,5 @@
 /**
- * @file inMemoryDatabase.cc
+ * @file in_mem_db.cc
  * @author Zuoru YANG (zryang@cse.cuhk.edu.hk)
  * @brief implement the interface of in-memory index
  * @version 0.1
@@ -9,16 +9,15 @@
  * 
  */
 
-#include "../../include/inMemoryDatabase.h"
-
+#include "../../include/database/in_mem_db.h"
 
 /**
  * @brief Construct a new In Memory Database object
  * 
- * @param dbName the path of the db file
+ * @param db_name the path of the db file
  */
-InMemoryDatabase::InMemoryDatabase(std::string dbName) {
-    this->OpenDB(dbName);
+InMemoryDatabase::InMemoryDatabase(string db_name) {
+    this->OpenDB(db_name);
 }
 
 /**
@@ -26,78 +25,82 @@ InMemoryDatabase::InMemoryDatabase(std::string dbName) {
  * 
  */
 InMemoryDatabase::~InMemoryDatabase() {
-    // perisistent the indexFile to the disk
-    ofstream dbFile;
-    dbFile.open(dbName_, ios_base::trunc | ios_base::binary);
-    int itemSize = 0;
-    for (auto it = indexObj_.begin(); it != indexObj_.end(); it++) {
+    // persistent the indexFile to the disk
+    ofstream db_file;
+    db_file.open(db_name_, ios_base::trunc | ios_base::binary);
+    uint32_t item_size = 0;
+    for (auto it = index_obj_.begin(); it != index_obj_.end(); it++) {
         // write the key
-        itemSize = it->first.size();
-        dbFile.write((char*)&itemSize, sizeof(itemSize));
-        dbFile.write(it->first.c_str(), itemSize);
+        item_size = it->first.size();
+        db_file.write((char*)&item_size, sizeof(uint32_t));
+        db_file.write(it->first.c_str(), item_size);
 
         // write the value
-        itemSize = it->second.size();
-        dbFile.write((char*)&itemSize, sizeof(itemSize));
-        dbFile.write(it->second.c_str(), itemSize);
+        item_size = it->second.size();
+        db_file.write((char*)&item_size, sizeof(uint32_t));
+        db_file.write(it->second.c_str(), item_size);
     }
-    dbFile.close();
+    db_file.close();
 }
 
 /**
  * @brief open a database
  * 
- * @param dbName the db path
+ * @param db_name the db path 
  * @return true success
- * @return false fails
+ * @return false fail
  */
-bool InMemoryDatabase::OpenDB(std::string dbName) {
-    dbName_ = dbName;
+bool InMemoryDatabase::OpenDB(string db_name) {
+    db_name_ = db_name;
     // check whether there exists the index
-    ifstream dbFile;
-    dbFile.open(dbName_, ios_base::in | ios_base::binary);
-    if (!dbFile.is_open()) {
-        fprintf(stderr, "InMemoryDatabase: cannot open the db file.\n");
+    ifstream db_file;
+    db_file.open(db_name_, ios_base::in | ios_base::binary);
+    if (!db_file.is_open()) {
+        tool::Logging(my_name_.c_str(), "cannot open the db file.\n");
     }
 
-    size_t beginSize = dbFile.tellg();
-    dbFile.seekg(0, ios_base::end);
-    size_t fileSize = dbFile.tellg();
-    fileSize = fileSize - beginSize;
+    size_t start_size = db_file.tellg();
+    db_file.seekg(0, ios_base::end);
+    size_t fileSize = db_file.tellg();
+    fileSize = fileSize - start_size;
 
     if (fileSize == 0) {
         // db file not exist
-        fprintf(stderr, "InMemoryDatabase: db file file is not exists, create a new one.\n");
+        tool::Logging(my_name_.c_str(), "db file file not exists, create a new one.\n");
     } else {
         // db file exist, load
-        dbFile.seekg(0, ios_base::beg);
-        bool isEnd = false;
-        int itemSize = 0;
+        db_file.seekg(0, ios_base::beg);
+        bool is_end = false;
+        uint32_t item_size = 0;
         string key;
         string value;
-        while (!isEnd) {
+        while (!is_end) {
             // read key
-            dbFile.read((char*)&itemSize, sizeof(itemSize));
-            if (itemSize == 0) {
+            db_file.read((char*)&item_size, sizeof(uint32_t));
+            if (item_size == 0) {
                 break;
             }
-            key.resize(itemSize, 0); 
-            dbFile.read((char*)&key[0], itemSize);
+            key.resize(item_size, 0); 
+            db_file.read((char*)&key[0], item_size);
 
             // read value
-            dbFile.read((char*)&itemSize, sizeof(itemSize));
-            value.resize(itemSize, 0);
-            dbFile.read((char*)&value[0], itemSize);
+            db_file.read((char*)&item_size, sizeof(uint32_t));
+            value.resize(item_size, 0);
+            db_file.read((char*)&value[0], item_size);
+            is_end = db_file.eof();
             
             // update the index
-            indexObj_.insert(make_pair(key, value));
-            itemSize = 0;
-            // update the read flag
-            isEnd = dbFile.eof();
+            index_obj_[key] = value;
+            item_size = 0;
+
+            if (is_end) {
+                break;
+            }
         }
     }
-    dbFile.close();
-    fprintf(stderr, "InMemoryDatabase: loaded index size: %lu\n", indexObj_.size());
+    db_file.close();
+    tool::Logging(my_name_.c_str(), "loaded index size: %lu\n",
+        index_obj_.size());
     return true;
 }
 
@@ -106,19 +109,18 @@ bool InMemoryDatabase::OpenDB(std::string dbName) {
  * 
  * @param key key
  * @param value value
- * @return true success
- * @return false fail
+ * @return true exist
+ * @return false not exist
  */
-bool InMemoryDatabase::Query(const std::string& key, std::string& value) {
-    auto findResult = indexObj_.find(key);
-    if (findResult != indexObj_.end()) {
+bool InMemoryDatabase::Query(const string& key, string& value) {
+    auto find_ret = index_obj_.find(key);
+    if (find_ret != index_obj_.end()) {
         // it exists in the index
-        value.assign(findResult->second);
+        value.assign(find_ret->second);
         return true;
     } 
     return false;
 }
-
 
 /**
  * @brief insert the (key, value) pair

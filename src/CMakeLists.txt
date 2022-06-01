@@ -30,7 +30,7 @@ endif()
 set(COMPRESSION_OBJ lz4 zstd z)
 set(OPENSSL_OBJ ssl crypto)
 set(OUTSIDE_OBJ ${SYSTEM_LIB_OBJ} ${BOOST_LIB_OBJ} ${OPENSSL_OBJ} ${COMPRESSION_OBJ})
-set(INSIDE_OBJ chunkingLib COMPRESS_LIB cryptoLib networkLib utilLib)
+set(INSIDE_OBJ chunkingLib COMPRESS_LIB DATABASE_LIB CRYPTO_LIB networkLib utilLib)
 set(FINAL_OBJ ${OUTSIDE_OBJ} ${INSIDE_OBJ})
 set(LEARNING_OBJ stdTutorLib boostTutorLib)
 

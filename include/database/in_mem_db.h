@@ -9,29 +9,24 @@
  * 
  */
 
-#ifndef IN_MEMORY_INDEX_H
-#define IN_MEMORY_INDEX_H
+#ifndef MY_CODEBASE_IN_MEMORY_DB_H
+#define MY_CODEBASE_IN_MEMORY_DB_H
 
 #include "abs_db.h"
 
 class InMemoryDatabase : public AbsDatabase {
     protected:
+        string my_name_ = "InMemoryDatabase";
         /*data*/
-        unordered_map<string, string> indexObj_;
+        unordered_map<string, string> index_obj_;
 
     public:
         /**
          * @brief Construct a new In Memory Database object
          * 
+         * @param db_name the path of the db file
          */
-        InMemoryDatabase() {};
-
-        /**
-         * @brief Construct a new In Memory Database object
-         * 
-         * @param dbName the path of the db file
-         */
-        InMemoryDatabase(std::string dbName);
+        InMemoryDatabase(string db_name);
 
         /**
          * @brief Destroy the In Memory Database object
@@ -42,68 +37,66 @@ class InMemoryDatabase : public AbsDatabase {
         /**
          * @brief open a database
          * 
-         * @param dbName the db path
+         * @param db_name the db path 
          * @return true success
-         * @return false fails
+         * @return false fail
          */
-        bool OpenDB(std::string dbName);
+        virtual bool OpenDB(string db_name) = 0;
 
         /**
          * @brief execute query over database
          * 
          * @param key key
          * @param value value
-         * @return true success
-         * @return false fail
+         * @return true exist
+         * @return false not exist
          */
-        bool Query(const std::string& key, std::string& value);
+        bool Query(const string& key, string& value);
 
         /**
          * @brief insert the (key, value) pair
          * 
          * @param key key
          * @param value value
-         * @return true success
-         * @return false fail
+         * @return true exist
+         * @return false not exist
          */
-        bool Insert(const std::string& key, const std::string& value);
-
-
-        /**
-         * @brief insert the (key, value) pair
-         * 
-         * @param key 
-         * @param buffer 
-         * @param bufferSize 
-         * @return true 
-         * @return false 
-         */
-        bool InsertBuffer(const std::string& key, const char* buffer, size_t bufferSize);
+        bool Insert(const string& key, const string& value);
 
         /**
          * @brief insert the (key, value) pair
          * 
-         * @param key 
-         * @param keySize 
-         * @param buffer 
-         * @param bufferSize 
-         * @return true 
-         * @return false 
+         * @param key the key 
+         * @param buf the value buffer
+         * @param buf_size the buffer size
+         * @return true exist
+         * @return false not exist
          */
-        bool InsertBothBuffer(const char* key, size_t keySize, const char* buffer,
-            size_t bufferSize);
+        bool InsertBuffer(const string& key, const char* buf, size_t buf_size);
+
+        /**
+         * @brief insert the (key, value) pair
+         * 
+         * @param key the key
+         * @param key_size the key size
+         * @param buf the value buffer
+         * @param buf_size the buffer size
+         * @return true exist
+         * @return false not exist
+         */
+        bool InsertBothBuffer(const char* key, size_t key_size, const char* buf,
+            size_t buf_size);
 
         /**
          * @brief query the (key, value) pair
          * 
-         * @param key 
-         * @param keySize 
-         * @param value 
-         * @return true 
-         * @return false 
+         * @param key the key
+         * @param key_size the key size
+         * @param value the value
+         * @return true exist
+         * @return false not exist
          */
-        bool QueryBuffer(const char* key, size_t keySize, std::string& value);
-
+        bool QueryBuffer(const char* key, size_t key_size, string& value);
 };
 
 #endif

@@ -8,8 +8,8 @@
  * @copyright Copyright (c) 2020
  * 
  */
-#ifndef BASICDEDUP_LEVELDB_H
-#define BASICDEDUP_LEVELDB_H
+#ifndef MY_CODEBASE_LEVELDB_DB_H
+#define MY_CODEBASE_LEVELDB_DB_H
 
 #include "abs_db.h"
 
@@ -35,7 +35,7 @@ class LeveldbDatabase : public AbsDatabase {
          * @brief Destroy the leveldb Database object
          * 
          */
-        virtual ~LeveldbDatabase();
+        ~LeveldbDatabase();
 
         /**
          * @brief open a database
@@ -51,18 +51,18 @@ class LeveldbDatabase : public AbsDatabase {
          * 
          * @param key key
          * @param value value
-         * @return true success
-         * @return false fail
+         * @return true exist
+         * @return false not exist
          */
-        bool Query(const string& key, string& value);
+        bool Query(const string& key, string& value) = 0;
 
         /**
          * @brief insert the (key, value) pair
          * 
          * @param key key
          * @param value value
-         * @return true success
-         * @return false fail
+         * @return true exist
+         * @return false not exist
          */
         bool Insert(const string& key, const string& value);
 
@@ -99,9 +99,7 @@ class LeveldbDatabase : public AbsDatabase {
          * @return true exist
          * @return false not exist
          */
-        bool QueryBuffer(const char* key, size_t key_size, std::string& value);
+        bool QueryBuffer(const char* key, size_t key_size, string& value);
 };
 
-
-
-#endif // !BASICDEDUP_LEVELDB_H
+#endif
