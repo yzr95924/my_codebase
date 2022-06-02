@@ -34,6 +34,7 @@ set(INSIDE_OBJ chunkingLib COMPRESS_LIB DATABASE_LIB CRYPTO_LIB networkLib utilL
 set(FINAL_OBJ ${OUTSIDE_OBJ} ${INSIDE_OBJ})
 set(LEARNING_OBJ stdTutorLib boostTutorLib)
 
+# for the lib
 add_subdirectory(multhread)
 add_subdirectory(network)
 add_subdirectory(app)
@@ -42,6 +43,7 @@ add_subdirectory(util)
 add_subdirectory(crypto)
 add_subdirectory(compression)
 add_subdirectory(database)
+add_subdirectory(dedup)
 
 # for learning
 add_subdirectory(boost_tutor)
