@@ -15,7 +15,7 @@
  * @brief Construct a new Fix Chunker object
  * 
  */
-FixChunker::FixChunker() : AbsChunker() {
+FixChunker::FixChunker() {
     tool::Logging(my_name_.c_str(), "init FixChunker.\n");
 }
 
@@ -38,7 +38,7 @@ uint32_t FixChunker::LoadDataFromFile(ifstream& input_file) {
     pending_chunking_size_ = input_file.gcount();
 
     // reset the offset
-    cur_offset = 0;
+    cur_offset_ = 0;
     remain_chunking_size_ = pending_chunking_size_;
 
     return pending_chunking_size_;
@@ -57,14 +57,14 @@ uint32_t FixChunker::GenerateOneChunk(uint8_t* data) {
     
     uint32_t chunk_size = 0;
     if (remain_chunking_size_ >= avg_chunk_size_) {
-        memcpy(data, read_data_buf_ + cur_offset, avg_chunk_size_);
+        memcpy(data, read_data_buf_ + cur_offset_, avg_chunk_size_);
         chunk_size = avg_chunk_size_;
     } else {
-        memcpy(data, read_data_buf_ + cur_offset, remain_chunking_size_);
+        memcpy(data, read_data_buf_ + cur_offset_, remain_chunking_size_);
         chunk_size = remain_chunking_size_;        
     }
 
-    cur_offset += chunk_size;
+    cur_offset_ += chunk_size;
     remain_chunking_size_ -= chunk_size;
 
     _total_chunk_num++;

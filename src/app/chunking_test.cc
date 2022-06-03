@@ -11,6 +11,7 @@
 
 #include "../../include/dedup/abs_chunker.h"
 #include "../../include/dedup/fix_chunker.h"
+#include "../../include/dedup/rabin_chunker.h"
 #include "../../include/constVar.h"
 
 string my_name = "ChunkingTest";
@@ -101,7 +102,7 @@ int main(int argc, char* argv[]) {
     struct timeval stime;
     struct timeval etime;
 
-    AbsChunker* test_chunker = new FixChunker();
+    AbsChunker* test_chunker = new RabinChunker();
     double chunking_time = 0;
     bool is_end = false;
     while (!is_end) {
@@ -116,6 +117,7 @@ int main(int argc, char* argv[]) {
         uint32_t chunk_size;
         while (true) {
             chunk_size = test_chunker->GenerateOneChunk(chunk_buf);
+            cout << chunk_size << endl;
             if (!chunk_size) {
                 break;
             } else {

@@ -39,7 +39,7 @@ class AbsChunker {
         // size
         uint64_t pending_chunking_size_ = 0;
         uint64_t remain_chunking_size_ = 0;
-        uint64_t cur_offset = 0;
+        uint64_t cur_offset_ = 0;
         
     public:
         uint64_t _total_chunk_num = 0;
