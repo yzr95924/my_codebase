@@ -48,7 +48,7 @@ class MultiThreadLearning {
         }
 
         ~MultiThreadLearning() {
-            tool::Logging(class_name_.c_str(), "Destory MultiThreadLearning.\n");
+            tool::Logging(class_name_.c_str(), "Destroy MultiThreadLearning.\n");
         }
 
         /**

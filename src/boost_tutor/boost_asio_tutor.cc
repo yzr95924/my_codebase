@@ -25,7 +25,7 @@ BoostAsioTutor::BoostAsioTutor() {
  * 
  */
 BoostAsioTutor::~BoostAsioTutor() {
-    cout << "Destory the boost asio tutorial." << endl;
+    cout << "Destroy the boost asio tutorial." << endl;
 }
 
 /**

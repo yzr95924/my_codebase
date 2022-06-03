@@ -33,7 +33,7 @@ class LambdaLearn {
          * 
          */
         ~LambdaLearn() {
-            tool::Logging(class_name_.c_str(), "Destory LambdaLearn.\n");
+            tool::Logging(class_name_.c_str(), "Destroy LambdaLearn.\n");
         }
 
         /**

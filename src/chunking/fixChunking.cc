@@ -81,7 +81,7 @@ std::ifstream& FixChunking::GetChunkingFile() {
  * 
  */
 FixChunking::~FixChunking() {
-    fprintf(stderr, "FixChunking: Destory the object.\n");
+    fprintf(stderr, "FixChunking: Destroy the object.\n");
     if (waitingForChunkingBuffer_) {
         delete[] waitingForChunkingBuffer_;
     } 

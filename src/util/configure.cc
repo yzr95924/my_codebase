@@ -1,98 +1,83 @@
 /**
  * @file configure.cc
  * @author Zuoru YANG (zryang@cse.cuhk.edu.hk)
- * @brief implement interfaces defined in configure 
+ * @brief implement the interface of Configure 
  * @version 0.1
- * @date 2019-12-19
+ * @date 2022-06-03
  * 
- * @copyright Copyright (c) 2019
+ * @copyright Copyright (c) 2022
  * 
  */
+
 #include "../../include/configure.h"
 
 /**
- * @brief Destroy the Configure:: Configure object
+ * @brief Construct a new Configure object
  * 
+ * @param path the input configure file path
  */
-Configure::~Configure() {
-    fprintf(stderr, "Destory the configure module.\n");
+Configure::Configure(string path){
+    this->ReadConfig(path);
 }
 
 /**
- * @brief Construct a new Configure:: Configure object
+ * @brief Destroy the Configure object
  * 
- * @param path the configure file path
  */
-Configure::Configure(std::string path) {
-    this->ReadConf(path);
-}
+Configure::~Configure(){}
 
 /**
- * @brief read the configure file
+ * @brief Read setting data from json file
  * 
- * @param path the configure file name
+ * @param path the input configure file path
  */
-void Configure::ReadConf(std::string path) {
+/**
+ * @brief parse the json file
+ * 
+ * @param path the path to the json file
+ */
+void Configure::ReadConfig(string path) {
     using namespace boost;
     using namespace boost::property_tree;
     ptree root;
     read_json<ptree>(path, root);
-    // Chunker configure
-    chunkingType_ = root.get<uint64_t>("ChunkerConfig.chunkingType_");
-    maxChunkSize_ = root.get<uint64_t>("ChunkerConfig.maxChunkSize_");
-    minChunkSize_ = root.get<uint64_t>("ChunkerConfig.minChunkSize_");
-    avgChunkSize_ = root.get<uint64_t>("ChunkerConfig.avgChunkSize_");
-    slidingWinSize_ = root.get<uint64_t>("ChunkerConfig.slidingWinSize_");
-    segmentSize_ = root.get<uint64_t>("ChunkerConfig.segmentSize_");
-    readSize_ = root.get<uint64_t>("ChunkerConfig.readSize_");
 
-    // StorageCore configure
-    recipeRootPath_ = root.get<std::string>("StorageCore.recipeRootPath_");
-    containerRootPath_ = root.get<std::string>("StorageCore.containerRootPath_");
-    metaRootPath_ = root.get<std::string>("StorageCore.metaRootPath_");
-    fp2ChunkDBName_ = root.get<std::string>("StorageCore.fp2ChunkDBName_");
-    fp2MetaDBName_ = root.get<std::string>("StorageCore.fp2MetaDBName_");
+    // Chunker settings
+    chunking_type_ = root.get<uint64_t>("Chunker.chunking_type");
+    max_chunk_size_ = root.get<uint64_t>("Chunker.max_chunk_size");
+    min_chunk_size_ = root.get<uint64_t>("Chunker.min_chunk_size");
+    avg_chunk_size_ = root.get<uint64_t>("Chunker.avg_chunk_size");
+    chunker_sliding_win_size_ = root.get<uint64_t>("Chunker.sliding_win_size");
+    read_size_ = root.get<uint64_t>("Chunker.read_size");
 
-    // restore writer
-    restoreBatchSize_ = root.get<uint64_t>("RestoreWriter.restoreBatchSize_");
-    readCacheSize_ = root.get<uint64_t>("RestoreWriter.readCacheSize_");
+    // Similar detection setting
+    similar_sliding_win_size_ = root.get<uint64_t>("Similar.sliding_win_size");
 
-    // compression setting
-    enableCompression_ = root.get<std::string>("Compressor.enableCompression_");
-    if (enableCompression_.compare("true") == 0) {
-        enableCompressionFlag_ = true;
-    } else {
-        enableCompressionFlag_ = false;
+    // Storage Server settings
+    storage_server_ip_ = root.get<string>("StorageServer.ip");
+    storage_server_port_ = root.get<int>("StorageServer.port");
+    recipe_root_path_ = root.get<string>("StorageServer.recipe_root_path");
+    container_root_path_ = root.get<string>("StorageServer.container_root_path");
+    fp_2_chunk_db_ = root.get<string>("StorageServer.fp_2_chunk_db");
+    feature_2_fp_db_ = root.get<string>("StorageServer.feature_2_fp_db");
+    container_cache_size_ = root.get<uint64_t>("StorageServer.container_cache_size");
+
+    // key manager settings
+    km_ip_ = root.get<string>("KeyServer.ip");
+    km_port_ = root.get<int>("KeyServer.port");
+    feature_2_key_db_ = root.get<string>("KeyServer.feature_2_key_db");
+
+    // client settings
+    client_id_ = root.get<uint32_t>("Client.id");
+    send_chunk_batch_size_ = root.get<uint64_t>("Client.send_chunk_batch_size");
+    send_recipe_batch_size_ = root.get<uint64_t>("Client.send_recipe_batch_size");
+    user_key_ = root.get<string>("Client.user_key");
+
+    if (send_recipe_batch_size_ % send_chunk_batch_size_ != 0) {
+        tool::Logging(my_name_.c_str(), "recipe batch size should be a multiple "
+            "of chunk batch size.\n");
+        exit(EXIT_FAILURE);
     }
 
-    // restore container cache 
-    useCache_ = root.get<std::string>("RestoreWriter.useCache_");
-    if (useCache_.compare("true") == 0) {
-        useCacheFlag_ = true;
-    } else {
-        useCacheFlag_ = false;
-    }
-    // container cache setting
-    
-    // for backup
-    file2MetaDBName_ = root.get<std::string>("Backup.file2MetaDBName_");
-    tarDir_ = root.get<std::string>("Backup.tarDir_");
-    restoreTarDir_ = root.get<std::string>("Backup.restoreTarDir_");
-
-    // for NCloud connection 
-    redisIP_ = root.get<std::string>("NCloud.redisIP_");
-    redisPort_ = root.get<uint16_t>("NCloud.redisPort_");
-    redisReplyWaitTimeout_ = root.get<uint32_t>("NCloud.redisReplyWaitTimeout_");
-    redisPassword_ = root.get<std::string>("NCloud.redisPassword_");
-
-    // back-end type
-    backupEndType_ = root.get<std::string>("DataWriter.type_");
-    threadNum_ = root.get<uint32_t>("DataWriter.threadNum_");
-
-    // for storage server 
-    storageServerIp_ = root.get<std::string>("DataSender.storageServerIp_");
-    storageServerPort_ = root.get<int>("DataSender.storageServerPort_");
-
-    // for client id
-    clientID_ = root.get<int>("DataSender.clientID_");
+    return ;
 }

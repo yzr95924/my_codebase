@@ -234,7 +234,7 @@ void RFChunking::Chunking() {
  * 
  */
 RFChunking::~RFChunking() {
-    fprintf(stderr, "RFChunking: Destory the object.\n");
+    fprintf(stderr, "RFChunking: Destroy the object.\n");
     
     if (waitingForChunkingBuffer_) {
         delete[] waitingForChunkingBuffer_;

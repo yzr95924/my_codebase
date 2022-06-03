@@ -85,7 +85,7 @@ uint32_t FastCDC::CalNormalSize(const uint32_t min, const uint32_t av,
  * 
  */
 FastCDC::~FastCDC() {
-    fprintf(stderr, "FastCDC: Destory the object.\n");
+    fprintf(stderr, "FastCDC: Destroy the object.\n");
 
     if (waitingForChunkingBuffer_) {
         delete[] waitingForChunkingBuffer_;
