@@ -12,10 +12,8 @@
 #ifndef EDRSTORE_CONFIGURE_H
 #define EDRSTORE_CONFIGURE_H
 
-#include <bits/stdc++.h>
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
-#include "constVar.h"
 #include "define.h"
 
 using namespace std;

@@ -13,6 +13,7 @@
 #define MY_CODEBASE_SSL_CONNECTION_H
 
 #include "../configure.h"
+#include "../constVar.h"
 
 #include <netinet/in.h> // for sockaddr_in 
 #include <sys/socket.h>

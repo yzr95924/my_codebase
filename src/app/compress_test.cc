@@ -1,5 +1,5 @@
 /**
- * @file compressTest.cc
+ * @file compress_test.cc
  * @author Zuoru YANG (zryang@cse.cuhk.edu.hk)
  * @brief test Lz4 
  * @version 0.1

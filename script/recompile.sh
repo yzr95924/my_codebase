@@ -9,7 +9,7 @@ if [ -d "./bin" ]; then
     cd ./bin
     #mkdir Containers Recipes input output Meta
     cd ..
-    #cp config.json ./bin
+    cp config.json ./bin
 else
     echo "Please run setup.sh first"
 fi

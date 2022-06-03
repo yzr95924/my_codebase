@@ -23,3 +23,4 @@ rm -rf ./*
 cmake ..
 make -j4
 cd ..
+cp ./config.json bin

@@ -29,5 +29,8 @@ AbsChunker::AbsChunker() {
  * 
  */
 AbsChunker::~AbsChunker() {
+    fprintf(stderr, "========AbsChunker Info========\n");
+    fprintf(stderr, "total file size: %lu\n", _total_file_size);
+    fprintf(stderr, "total chunk num: %lu\n", _total_chunk_num);
     free(read_data_buf_);
 }

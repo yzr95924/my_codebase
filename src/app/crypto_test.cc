@@ -1,5 +1,5 @@
 /**
- * @file cryptoTest.cc
+ * @file crypto_test.cc
  * @author Zuoru YANG (zryang@cse.cuhk.edu.hk)
  * @brief a benchmark framework for crypto tool 
  * @version 0.1

@@ -19,6 +19,10 @@ using namespace std;
 
 extern Configure config;
 
+// the type of chunker
+enum CHUNKER_TYPE {FIXED_SIZE_CHUNKING = 0, RABIN_FP_CHUNKING, FAST_CDC,
+    FSL_TRACE, MS_TRACE};
+
 class AbsChunker {
     protected:
         string my_name_ = "AbsChunker";
@@ -35,10 +39,11 @@ class AbsChunker {
         // size
         uint64_t pending_chunking_size_ = 0;
         uint64_t remain_chunking_size_ = 0;
+        uint64_t cur_offset = 0;
         
     public:
         uint64_t _total_chunk_num = 0;
-        uint64_t _file_size = 0;
+        uint64_t _total_file_size = 0;
 
         /**
          * @brief Construct a new Abs Chunker object
