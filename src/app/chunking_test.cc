@@ -117,11 +117,11 @@ int main(int argc, char* argv[]) {
         uint32_t chunk_size;
         while (true) {
             chunk_size = test_chunker->GenerateOneChunk(chunk_buf);
-            cout << chunk_size << endl;
             if (!chunk_size) {
                 break;
             } else {
                 // TODO: process the chunk here
+                // cout << chunk_size << endl;
             }
         }
         gettimeofday(&etime, NULL);

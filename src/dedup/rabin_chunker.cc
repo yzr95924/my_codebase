@@ -13,9 +13,10 @@
 
 uint64_t GetBitNum(uint64_t input_num) {
     uint64_t tmp = input_num;
-    uint64_t num_of_bit = 1;
-    while (input_num / 2) {
+    uint64_t num_of_bit = 0;
+    while (tmp / 2) {
         num_of_bit++;
+        tmp /= 2; 
     }
     return num_of_bit;
 }
@@ -29,7 +30,6 @@ RabinChunker::RabinChunker() {
     rabin_util_->NewCtx(rabin_ctx_);
     uint64_t bit_of_avg = GetBitNum(avg_chunk_size_);
     mask_ = (1 << bit_of_avg) - 1;
-    cout << bit_of_avg << endl;
 }
 
 /**
