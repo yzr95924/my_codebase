@@ -26,7 +26,8 @@ uint64_t GetBitNum(uint64_t input_num) {
  * 
  */
 RabinChunker::RabinChunker() {
-    rabin_util_ = new RabinFPUtil(config.GetChunkerSlidingWinSize());
+    // rabin_util_ = new RabinFPUtil(config.GetChunkerSlidingWinSize());
+    rabin_util_ = new NewRabinUtil(config.GetChunkerSlidingWinSize());
     rabin_util_->NewCtx(rabin_ctx_);
     uint64_t bit_of_avg = GetBitNum(avg_chunk_size_);
     mask_ = (1 << bit_of_avg) - 1;
@@ -37,7 +38,6 @@ RabinChunker::RabinChunker() {
  * 
  */
 RabinChunker::~RabinChunker() {
-    cout << mask_ << endl;
     rabin_util_->FreeCtx(rabin_ctx_);
     delete rabin_util_;
 }
@@ -71,10 +71,10 @@ uint32_t RabinChunker::GenerateOneChunk(uint8_t* data) {
     }
 
     uint32_t chunk_size = 0;
-    if (remain_chunking_size_ <= min_chunk_size_) {
-        memcpy(data, read_data_buf_ + cur_offset_, remain_chunking_size_);
-        chunk_size = remain_chunking_size_;
-    } else {
+    // if (remain_chunking_size_ <= min_chunk_size_) {
+    //     memcpy(data, read_data_buf_ + cur_offset_, remain_chunking_size_);
+    //     chunk_size = remain_chunking_size_;
+    // } else {
         uint8_t* input_byte; 
         uint64_t cur_fp;
 
@@ -82,17 +82,19 @@ uint32_t RabinChunker::GenerateOneChunk(uint8_t* data) {
             // find the chunk
             input_byte = read_data_buf_ + cur_offset_ + chunk_size;
             cur_fp = rabin_util_->SlideOneByte(rabin_ctx_, *input_byte);
+            // cout << int(*input_byte) << endl;
+            // cout << cur_fp << endl;
             
             chunk_size++;
 
             if ((chunk_size >= min_chunk_size_ && (cur_fp & mask_) == 0) ||
                 chunk_size == max_chunk_size_ || (remain_chunking_size_ - chunk_size == 0)) {
-                memcpy(data, read_data_buf_ + cur_offset_, chunk_size);
+                // memcpy(data, read_data_buf_ + cur_offset_, chunk_size);
                 rabin_util_->ResetCtx(rabin_ctx_);
                 break;
             }
         }
-    }
+    // }
 
     cur_offset_ += chunk_size;
     remain_chunking_size_ -= chunk_size;

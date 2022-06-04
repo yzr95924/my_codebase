@@ -129,15 +129,16 @@ int main(int argc, char* argv[]) {
             break;
         }
 
-        gettimeofday(&stime, NULL);
         uint8_t chunk_buf[MAX_CHUNK_SIZE] = {0};
         uint32_t chunk_size;
+        gettimeofday(&stime, NULL);
         while (true) {
             chunk_size = test_chunker->GenerateOneChunk(chunk_buf);
             if (!chunk_size) {
                 break;
             } else {
                 // TODO: process the chunk here
+                cout << chunk_size << endl;
             }
         }
         gettimeofday(&etime, NULL);
