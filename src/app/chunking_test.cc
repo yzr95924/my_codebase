@@ -12,7 +12,9 @@
 #include "../../include/dedup/abs_chunker.h"
 #include "../../include/dedup/fix_chunker.h"
 #include "../../include/dedup/rabin_chunker.h"
+#include "../../include/dedup/fastcdc_chunker.h"
 #include "../../include/constVar.h"
+#include "../../include/crypto/crypto_util.h"
 
 string my_name = "ChunkingTest";
 
@@ -102,7 +104,22 @@ int main(int argc, char* argv[]) {
     struct timeval stime;
     struct timeval etime;
 
-    AbsChunker* test_chunker = new RabinChunker();
+    AbsChunker* test_chunker; 
+    switch (type) {
+        case FIXED_SIZE_CHUNKING: {
+            test_chunker = new FixChunker();
+            break;
+        }
+        case RABIN_FP_CHUNKING: {
+            test_chunker = new RabinChunker();
+            break;
+        }
+        case FAST_CDC: {
+            test_chunker = new FastCDC();
+            break;
+        }
+    }
+
     double chunking_time = 0;
     bool is_end = false;
     while (!is_end) {
@@ -121,7 +138,6 @@ int main(int argc, char* argv[]) {
                 break;
             } else {
                 // TODO: process the chunk here
-                // cout << chunk_size << endl;
             }
         }
         gettimeofday(&etime, NULL);

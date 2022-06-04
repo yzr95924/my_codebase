@@ -37,6 +37,7 @@ RabinChunker::RabinChunker() {
  * 
  */
 RabinChunker::~RabinChunker() {
+    cout << mask_ << endl;
     rabin_util_->FreeCtx(rabin_ctx_);
     delete rabin_util_;
 }
@@ -66,7 +67,7 @@ uint32_t RabinChunker::LoadDataFromFile(ifstream& input_file) {
  */
 uint32_t RabinChunker::GenerateOneChunk(uint8_t* data) {
     if (pending_chunking_size_ == 0 || remain_chunking_size_ == 0) {
-        return 0; // this is end of the pending buffer
+        return 0; // this is the end of the pending buffer
     }
 
     uint32_t chunk_size = 0;
@@ -76,16 +77,14 @@ uint32_t RabinChunker::GenerateOneChunk(uint8_t* data) {
     } else {
         uint8_t* input_byte; 
         uint64_t cur_fp;
-        uint64_t cur_pos = 0;
 
         while (true) {
             // find the chunk
-            input_byte = read_data_buf_ + cur_offset_ + cur_pos;
+            input_byte = read_data_buf_ + cur_offset_ + chunk_size;
             cur_fp = rabin_util_->SlideOneByte(rabin_ctx_, *input_byte);
             
             chunk_size++;
-            cur_pos++;
-            
+
             if ((chunk_size >= min_chunk_size_ && (cur_fp & mask_) == 0) ||
                 chunk_size == max_chunk_size_ || (remain_chunking_size_ - chunk_size == 0)) {
                 memcpy(data, read_data_buf_ + cur_offset_, chunk_size);

@@ -35,10 +35,10 @@ set(FINAL_OBJ ${OUTSIDE_OBJ} ${INSIDE_OBJ})
 set(LEARNING_OBJ stdTutorLib boostTutorLib)
 
 # for the lib
-add_subdirectory(multhread)
+# add_subdirectory(multhread)
 add_subdirectory(network)
 add_subdirectory(app)
-add_subdirectory(chunking)
+# add_subdirectory(chunking)
 add_subdirectory(util)
 add_subdirectory(crypto)
 add_subdirectory(compression)
