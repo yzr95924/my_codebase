@@ -27,7 +27,7 @@ uint64_t GetBitNum(uint64_t input_num) {
  */
 RabinChunker::RabinChunker() {
     // rabin_util_ = new RabinFPUtil(config.GetChunkerSlidingWinSize());
-    rabin_util_ = new NewRabinUtil(config.GetChunkerSlidingWinSize());
+    rabin_util_ = new RabinFPUtil(config.GetChunkerSlidingWinSize());
     rabin_util_->NewCtx(rabin_ctx_);
     uint64_t bit_of_avg = GetBitNum(avg_chunk_size_);
     mask_ = (1 << bit_of_avg) - 1;

@@ -14,4 +14,4 @@ add_executable(ChunkingTest chunking_test.cc)
 target_link_libraries(ChunkingTest ${FINAL_OBJ})
 
 add_executable(RabinTest rabin_test.cc)
-target_link_libraries(RabinTest ${FINAL_OBJ})
+target_link_libraries(RabinTest DEDUP_LIB jemalloc)

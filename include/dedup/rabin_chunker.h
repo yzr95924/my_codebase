@@ -21,9 +21,8 @@ class RabinChunker : public AbsChunker {
         string my_name_ = "RabinChunker";
 
         // for compute rabin fingerprint
-        // RabinFPUtil* rabin_util_;
-        NewRabinUtil* rabin_util_;
-        NewRabin_t rabin_ctx_;
+        RabinFPUtil* rabin_util_;
+        RabinCtx_t rabin_ctx_;
         uint64_t mask_;
 
     public:

@@ -1,5 +1,5 @@
-#CFLAGS+=-Wall -W -ggdb3 -std=gnu99 -O2
-CFLAGS+=-Wall -O3
+#CFLAGS+=-Wall -W -ggdb3 -std=c17 -O0
+CFLAGS+=-Wall -O3 -ljemalloc -lstdc++
 
 
 .PHONY: all clean clean-rabin

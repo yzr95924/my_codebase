@@ -11,7 +11,6 @@
 
 #include "../../include/dedup/rabin_poly.h"
 #include "../../include/dedup/new_rabin_poly.h"
-#include "../../include/configure.h"
 
 string my_name = "RabinTest";
 
@@ -20,13 +19,10 @@ void Usage() {
     return ;
 }
 
-Configure config("config.json");
-
 int main(int argc, char* argv[]) {
     /* code */
     const char opt_string[] = "i:";
     string input_path;
-    int type;
 
     if (argc != sizeof(opt_string)) {
         tool::Logging(my_name.c_str(), "wrong argc number.\n");
@@ -57,7 +53,7 @@ int main(int argc, char* argv[]) {
         exit(EXIT_FAILURE);
     }
 
-    uint64_t read_size = config.GetReadSize() * (1 << 20);
+    uint64_t read_size = 128 * (1 << 20);
     uint8_t* read_buf = (uint8_t*) malloc(read_size * sizeof(uint8_t));
     struct timeval stime;
     struct timeval etime;
@@ -65,11 +61,11 @@ int main(int argc, char* argv[]) {
     NewRabin_t new_rabin_ctx;
     RabinCtx_t rabin_ctx;
 
-    RabinFPUtil* rabin_util = new RabinFPUtil(config.GetChunkerSlidingWinSize());
-    NewRabinUtil* new_rabin_util = new NewRabinUtil(config.GetChunkerSlidingWinSize());
+    RabinFPUtil* rabin_util = new RabinFPUtil(128);
+    NewRabinUtil* new_rabin_util = new NewRabinUtil(128);
 
     rabin_util->NewCtx(rabin_ctx);
-    new_rabin_util->NewCtx(new_rabin_ctx);
+    new_rabin_util->NewCtx(&new_rabin_ctx);
 
     double rabin_time = 0;
     double new_rabin_time = 0;
@@ -91,7 +87,7 @@ int main(int argc, char* argv[]) {
 
         gettimeofday(&stime, NULL);
         for (size_t i = 0; i < pending_size; i++) {
-            new_rabin_util->SlideOneByte(new_rabin_ctx, read_buf[i]);
+            new_rabin_util->SlideOneByte(&new_rabin_ctx, read_buf[i]);
         }        
         gettimeofday(&etime, NULL);
         new_rabin_time += tool::GetTimeDiff(stime, etime);

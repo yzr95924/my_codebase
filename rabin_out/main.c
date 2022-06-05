@@ -44,22 +44,26 @@ int main(int argc, char* argv[]) {
 
         bytes += len;
         gettimeofday(&stime, NULL);
-        while (1) {
-            int remaining = rabin_next_chunk(hash, ptr, len);
+        // while (1) {
+        //     int remaining = rabin_next_chunk(hash, ptr, len);
 
-            if (remaining < 0) {
-                break;
-            }
+        //     if (remaining < 0) {
+        //         break;
+        //     }
 
-            len -= remaining;
-            ptr += remaining;
+        //     len -= remaining;
+        //     ptr += remaining;
 
-            // printf("%d %016llx\n",
-                // last_chunk.length,
-                // (long long unsigned int)last_chunk.cut_fingerprint);
-            fprintf(stdout, "%u\n", last_chunk.length);
+        //     // printf("%d %016llx\n",
+        //         // last_chunk.length,
+        //         // (long long unsigned int)last_chunk.cut_fingerprint);
+        //     // fprintf(stdout, "%u\n", last_chunk.length);
 
-            chunks++;
+        //     chunks++;
+        // }
+        for (size_t i = 0; i < len; i++) {
+            rabin_slide(hash, buf[i]);
+            fprintf(stdout, "%lu\n", hash->digest);
         }
         gettimeofday(&etime, NULL);
         total_time += GetTimeDiff(stime, etime);
