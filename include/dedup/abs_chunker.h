@@ -19,10 +19,6 @@ using namespace std;
 
 extern Configure config;
 
-// the type of chunker
-enum CHUNKER_TYPE {FIXED_SIZE_CHUNKING = 0, RABIN_FP_CHUNKING, FAST_CDC,
-    FSL_TRACE, MS_TRACE};
-
 class AbsChunker {
     protected:
         string my_name_ = "AbsChunker";

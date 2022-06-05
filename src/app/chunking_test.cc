@@ -13,6 +13,7 @@
 #include "../../include/dedup/fix_chunker.h"
 #include "../../include/dedup/rabin_chunker.h"
 #include "../../include/dedup/fastcdc_chunker.h"
+#include "../../include/dedup/chunker_factory.h"
 #include "../../include/constVar.h"
 #include "../../include/crypto/crypto_util.h"
 

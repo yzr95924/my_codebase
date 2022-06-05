@@ -22,7 +22,23 @@ class DatabaseFactory {
     private:
         string my_name_ = "DBFactory";
     public:
-        AbsDatabase* CreateDatabase(int type, string path);
+        AbsDatabase* CreateDatabase(int type, string path) {
+            switch (type) {
+                case LEVELDB_DB: {
+                    tool::Logging(my_name_.c_str(), "using LevelDB.\n");
+                    return new LeveldbDatabase(path);
+                }
+                case IN_MEMORY_DB: {
+                    tool::Logging(my_name_.c_str(), "using In-Memory DB.\n");
+                    return new InMemoryDatabase(path);
+                }
+                default: {
+                    tool::Logging(my_name_.c_str(), "wrong DB type.\n");
+                    exit(EXIT_FAILURE);    
+                }
+            }
+            return NULL;
+        }
 };
 
 #endif

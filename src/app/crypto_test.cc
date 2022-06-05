@@ -34,7 +34,7 @@ void Usage() {
 }
 
 int main(int argc, char* argv[]) {
-    srand(time(NULL));
+    srand(tool::GetStrongSeed());
     const char opt_string[] = "i:c:h:s:";  
     int option;
     uint32_t chunk_size = 0;

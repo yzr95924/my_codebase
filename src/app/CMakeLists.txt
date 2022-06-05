@@ -15,3 +15,6 @@ target_link_libraries(ChunkingTest ${FINAL_OBJ})
 
 add_executable(RabinTest rabin_test.cc)
 target_link_libraries(RabinTest ${FINAL_OBJ})
+
+add_executable(MQTest mq_test.cc)
+target_link_libraries(MQTest ${FINAL_OBJ})
