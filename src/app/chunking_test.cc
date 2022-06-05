@@ -138,7 +138,7 @@ int main(int argc, char* argv[]) {
                 break;
             } else {
                 // TODO: process the chunk here
-                cout << chunk_size << endl;
+                // cout << chunk_size << endl;
             }
         }
         gettimeofday(&etime, NULL);

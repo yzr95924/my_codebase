@@ -10,18 +10,20 @@
  */
 
 #include "../../include/dedup/rabin_poly.h"
-#include "../../include/dedup/new_rabin_poly.h"
+#include "../../include/configure.h"
+
+Configure config("config.json");
 
 string my_name = "RabinTest";
 
 void Usage() {
-    fprintf(stderr, "%s -i [input file path].\n", my_name.c_str());
+    fprintf(stderr, "%s -i [input file path] -s [window size].\n", my_name.c_str());
     return ;
 }
 
 int main(int argc, char* argv[]) {
     /* code */
-    const char opt_string[] = "i:";
+    const char opt_string[] = "i:s:";
     string input_path;
 
     if (argc != sizeof(opt_string)) {
@@ -31,10 +33,16 @@ int main(int argc, char* argv[]) {
     }
 
     int option;
+    uint64_t window_size = 0;
     while ((option = getopt(argc, argv, opt_string)) != -1) {
         switch (option) {
             case 'i': {
                 input_path.assign(optarg);
+                break;
+            }
+            case 's': {
+                window_size = atol(optarg);
+                tool::Logging(my_name.c_str(), "window size: %lu\n", window_size);
                 break;
             }
             case '?': {
@@ -58,17 +66,13 @@ int main(int argc, char* argv[]) {
     struct timeval stime;
     struct timeval etime;
     
-    NewRabin_t new_rabin_ctx;
     RabinCtx_t rabin_ctx;
 
-    RabinFPUtil* rabin_util = new RabinFPUtil(128);
-    NewRabinUtil* new_rabin_util = new NewRabinUtil(128);
+    RabinFPUtil* rabin_util = new RabinFPUtil(window_size);
 
     rabin_util->NewCtx(rabin_ctx);
-    new_rabin_util->NewCtx(&new_rabin_ctx);
 
     double rabin_time = 0;
-    double new_rabin_time = 0;
     bool is_end = false;
     uint64_t pending_size = 0;
     while (!is_end) {
@@ -78,34 +82,24 @@ int main(int argc, char* argv[]) {
             break;
         }
 
+        uint64_t fp = 0;
         gettimeofday(&stime, NULL);
         for (size_t i = 0; i < pending_size; i++) {
-            rabin_util->SlideOneByte(rabin_ctx, read_buf[i]);
+            fp = rabin_util->SlideOneByte(rabin_ctx, read_buf[i]);
         }
         gettimeofday(&etime, NULL);
         rabin_time += tool::GetTimeDiff(stime, etime);
-
-        gettimeofday(&stime, NULL);
-        for (size_t i = 0; i < pending_size; i++) {
-            new_rabin_util->SlideOneByte(&new_rabin_ctx, read_buf[i]);
-        }        
-        gettimeofday(&etime, NULL);
-        new_rabin_time += tool::GetTimeDiff(stime, etime);
         is_end = input_file_hdl.eof();
     }
 
     rabin_util->FreeCtx(rabin_ctx);
-    new_rabin_util->FreeCtx(new_rabin_ctx);
 
     fprintf(stdout, "--------Test Result--------\n");
     fprintf(stdout, "total file size (B): %lu\n", pending_size);
     fprintf(stdout, "rabin speed (MiB/s): %lf\n", static_cast<double>(pending_size) / 
         1024.0 / 1024.0 / rabin_time);
-    fprintf(stdout, "new rabin speed (MiB/s): %lf\n", static_cast<double>(pending_size) / 
-        1024.0 / 1024.0 / new_rabin_time);
     input_file_hdl.close();
     free(read_buf);
     delete rabin_util;
-    delete new_rabin_util;
     return 0;
 }

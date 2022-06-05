@@ -28,10 +28,10 @@ typedef struct {
 class RabinFPUtil {
     private:
         // configuration
-        uint64_t fp_poly_ = 0xbfe6b8a5bf378d83LL;
+        uint64_t fp_poly_;
         uint64_t window_size_;
 
-        uint32_t shift_;
+        int shift_;
         uint64_t T_[256];			// Lookup table for mod
         uint64_t U_[256];
 

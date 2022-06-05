@@ -102,10 +102,11 @@ static u_int64_t polymmult (u_int64_t x, u_int64_t y, u_int64_t d) {
  * @param window_size the sliding window size
  */
 RabinFPUtil::RabinFPUtil(uint64_t window_size) {
+    fp_poly_ = 0xbfe6b8a5bf378d83LL;
     window_size_ = window_size;
-    uint32_t x_shift = fls64(fp_poly_) - 1;
-    shift_ = x_shift - 8;
     uint32_t i;
+    int x_shift = fls64(fp_poly_) - 1;
+    shift_ = x_shift - 8;
 
     uint64_t T1 = polymod (0, INT64 (1) << x_shift, fp_poly_);
     for (i = 0; i < 256; i++) {
@@ -138,7 +139,7 @@ uint64_t RabinFPUtil::Append8(uint64_t p, uint8_t m) {
 void RabinFPUtil::NewCtx(RabinCtx_t& ctx) {
     ctx.circ_buf = (uint8_t*) malloc(window_size_ * sizeof(uint8_t));
     memset(ctx.circ_buf, 0, window_size_);
-    ctx.cur_pos = 0;
+    ctx.cur_pos = -1;
     ctx.fp = 0;
     return ;
 }
@@ -160,7 +161,7 @@ void RabinFPUtil::FreeCtx(RabinCtx_t& ctx) {
  */
 void RabinFPUtil::ResetCtx(RabinCtx_t& ctx) {
     memset(ctx.circ_buf, 0, window_size_);
-    ctx.cur_pos = 0;
+    ctx.cur_pos = -1;
     ctx.fp = 0;
     return ;
 }
@@ -180,5 +181,6 @@ uint64_t RabinFPUtil::SlideOneByte(RabinCtx_t& ctx, uint8_t input_byte) {
     }
     uint8_t om = ctx.circ_buf[ctx.cur_pos];
     ctx.circ_buf[ctx.cur_pos] = input_byte;
-    return ctx.fp = Append8(ctx.fp ^ U_[om], input_byte);
+    ctx.fp = Append8(ctx.fp ^ U_[om], input_byte);
+    return ctx.fp; 
 }

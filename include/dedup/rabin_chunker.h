@@ -14,7 +14,6 @@
 
 #include "abs_chunker.h"
 #include "rabin_poly.h"
-#include "new_rabin_poly.h"
 
 class RabinChunker : public AbsChunker {
     protected:
