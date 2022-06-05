@@ -25,13 +25,14 @@ typedef struct {
     int y;
 } MQ_t;
 
-uint32_t queue_size = 100;
+uint32_t queue_size = 1000;
+uint32_t factor = 4;
 BlockedMQ<MQ_t>* input_mq;
 
 void RunTh1(BlockedMQ<MQ_t>* input_mq) {
     string my_name = "thread-1";
     tool::Logging(my_name.c_str(), "running.\n");
-    for (int i = 0; i < queue_size * 2; i++) {
+    for (int i = 0; i < queue_size * 4; i++) {
         MQ_t input_msg{i, i};
         tool::Logging(my_name.c_str(), "insert {%d, %d}\n", i, i);
         if (!input_mq->Push(input_msg)) {
@@ -57,6 +58,8 @@ void RunTh2(BlockedMQ<MQ_t>* output_mq) {
 
         if (output_mq->Pop(tmp_msg)) {
             tool::Logging(my_name.c_str(), "recv {%d, %d}\n", tmp_msg.x, tmp_msg.y);
+            tool::Logging(my_name.c_str(), "wait {%d, %d}\n", tmp_msg.x, tmp_msg.y);
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
         }
 
         if (job_done_flag) {
@@ -83,9 +86,16 @@ int main(int argc, char* argv[]) {
     tmp_th = new boost::thread(attrs, boost::bind(&RunTh2, input_mq));
     th_list.push_back(tmp_th);
 
+    struct timeval stime;
+    struct timeval etime;
+    double total_time = 0;
+    gettimeofday(&stime, NULL);
     for (auto it : th_list) {
         it->join();
     }
+    gettimeofday(&etime, NULL);
+    total_time += tool::GetTimeDiff(stime, etime);
+    tool::Logging(my_name.c_str(), "total time: %lf\n", total_time);
 
     for(auto it : th_list) {
         delete it;
