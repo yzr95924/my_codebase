@@ -71,10 +71,10 @@ uint32_t RabinChunker::GenerateOneChunk(uint8_t* data) {
     }
 
     uint32_t chunk_size = 0;
-    // if (remain_chunking_size_ <= min_chunk_size_) {
-    //     memcpy(data, read_data_buf_ + cur_offset_, remain_chunking_size_);
-    //     chunk_size = remain_chunking_size_;
-    // } else {
+    if (remain_chunking_size_ <= min_chunk_size_) {
+        memcpy(data, read_data_buf_ + cur_offset_, remain_chunking_size_);
+        chunk_size = remain_chunking_size_;
+    } else {
         uint8_t* input_byte; 
         uint64_t cur_fp;
 
@@ -89,12 +89,12 @@ uint32_t RabinChunker::GenerateOneChunk(uint8_t* data) {
 
             if ((chunk_size >= min_chunk_size_ && (cur_fp & mask_) == 0) ||
                 chunk_size == max_chunk_size_ || (remain_chunking_size_ - chunk_size == 0)) {
-                // memcpy(data, read_data_buf_ + cur_offset_, chunk_size);
+                memcpy(data, read_data_buf_ + cur_offset_, chunk_size);
                 rabin_util_->ResetCtx(rabin_ctx_);
                 break;
             }
         }
-    // }
+    }
 
     cur_offset_ += chunk_size;
     remain_chunking_size_ -= chunk_size;
