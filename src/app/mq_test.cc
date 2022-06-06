@@ -27,9 +27,10 @@ typedef struct {
 
 uint32_t queue_size = 1000;
 uint32_t factor = 4;
-BlockedMQ<MQ_t>* input_mq;
+LckFreeMQ<MQ_t>* input_mq;
+uint64_t sleep_time_ms = 10;
 
-void RunTh1(BlockedMQ<MQ_t>* input_mq) {
+void RunTh1(LckFreeMQ<MQ_t>* input_mq) {
     string my_name = "thread-1";
     tool::Logging(my_name.c_str(), "running.\n");
     for (int i = 0; i < queue_size * 4; i++) {
@@ -44,7 +45,7 @@ void RunTh1(BlockedMQ<MQ_t>* input_mq) {
     return ;
 }
 
-void RunTh2(BlockedMQ<MQ_t>* output_mq) {
+void RunTh2(LckFreeMQ<MQ_t>* output_mq) {
     string my_name = "thread-2";
     tool::Logging(my_name.c_str(), "running.\n");
     bool job_done_flag = false;
@@ -59,7 +60,7 @@ void RunTh2(BlockedMQ<MQ_t>* output_mq) {
         if (output_mq->Pop(tmp_msg)) {
             tool::Logging(my_name.c_str(), "recv {%d, %d}\n", tmp_msg.x, tmp_msg.y);
             tool::Logging(my_name.c_str(), "wait {%d, %d}\n", tmp_msg.x, tmp_msg.y);
-            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+            std::this_thread::sleep_for(std::chrono::milliseconds(sleep_time_ms));
         }
 
         if (job_done_flag) {
@@ -73,7 +74,7 @@ void RunTh2(BlockedMQ<MQ_t>* output_mq) {
 
 int main(int argc, char* argv[]) {
     srand(tool::GetStrongSeed());
-    input_mq = new BlockedMQ<MQ_t>(queue_size);
+    input_mq = new LckFreeMQ<MQ_t>(queue_size);
 
     boost::thread* tmp_th;
     vector<boost::thread*> th_list;
@@ -95,6 +96,7 @@ int main(int argc, char* argv[]) {
     }
     gettimeofday(&etime, NULL);
     total_time += tool::GetTimeDiff(stime, etime);
+    total_time -= (sleep_time_ms * queue_size * factor) / 1000.0;
     tool::Logging(my_name.c_str(), "total time: %lf\n", total_time);
 
     for(auto it : th_list) {
