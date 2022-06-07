@@ -24,7 +24,16 @@ enum CHUNKER_TYPE {FIXED_SIZE_CHUNKING = 0, RABIN_FP_CHUNKING, FAST_CDC,
 class ChunkerFactory {
     private:
         string my_name_ = "ChunkerFactory";
+
     public:
+        ChunkerFactory() {
+            ;
+        }
+
+        ~ChunkerFactory() {
+            ;
+        }
+
         AbsChunker* CreateChunker(int type) {
             switch (type) {
                 case RABIN_FP_CHUNKING: {
@@ -40,7 +49,7 @@ class ChunkerFactory {
                     return new FixChunker();
                 }
                 default: {
-                    tool::Logging(my_name_.c_str(), "wrong DB type.\n");
+                    tool::Logging(my_name_.c_str(), "wrong chunker type.\n");
                     exit(EXIT_FAILURE);    
                 }
             }

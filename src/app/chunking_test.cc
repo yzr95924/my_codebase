@@ -100,8 +100,6 @@ int main(int argc, char* argv[]) {
         exit(EXIT_FAILURE);
     }
 
-    uint64_t read_size = config.GetReadSize() * (1 << 20);
-    uint8_t* read_buf = (uint8_t*) malloc(read_size * sizeof(uint8_t));
     struct timeval stime;
     struct timeval etime;
 
@@ -153,7 +151,6 @@ int main(int argc, char* argv[]) {
     fprintf(stdout, "chunking speed (MiB/s): %lf\n", static_cast<double>(test_chunker->_total_file_size) / 
         1024.0 / 1024.0 / chunking_time);
     input_file_hdl.close();
-    free(read_buf);
     delete test_chunker;
     return 0;
 }
