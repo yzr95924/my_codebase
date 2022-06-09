@@ -83,12 +83,28 @@ void FinesseUtil::ExtractFeature(RabinCtx_t& ctx, uint8_t* data, uint32_t size,
     }
     rabin_util_->ResetCtx(ctx);
 
+    // DEBUG:
+    // for (auto group : group_features) {
+    //     for (auto it: group) {
+    //         cout << it << " ";
+    //     }
+    //     cout << endl;
+    // }
+
     // sort the features of each group
     for (uint32_t i = 0; i < feature_per_super_feature_; i++) {
         // max->min
         sort(group_features[i].begin(), group_features[i].end(),
             greater<uint64_t>());
     }
+
+    // DEBUG
+    // for (auto group : group_features) {
+    //     for (auto it: group) {
+    //         cout << it << " ";
+    //     }
+    //     cout << endl;
+    // }
 
     // group features into super features
     vector<vector<uint64_t>> super_features;
@@ -98,6 +114,14 @@ void FinesseUtil::ExtractFeature(RabinCtx_t& ctx, uint8_t* data, uint32_t size,
             super_features[i].push_back(group_features[j][i]);
         }
     }
+
+    // DEBUG
+    // for (auto feature : super_features) {
+    //     for (auto it : feature) {
+    //         cout << it << " ";
+    //     }
+    //     cout << endl;
+    // }
 
     // compute the hash of the super features
     for (uint32_t i = 0; i < super_feature_per_chunk_; i++) {

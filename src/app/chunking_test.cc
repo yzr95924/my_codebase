@@ -14,6 +14,7 @@
 #include "../../include/dedup/rabin_chunker.h"
 #include "../../include/dedup/fastcdc_chunker.h"
 #include "../../include/dedup/chunker_factory.h"
+#include "../../include/dedup/finesse_util.h"
 #include "../../include/constVar.h"
 #include "../../include/crypto/crypto_util.h"
 
@@ -102,8 +103,21 @@ int main(int argc, char* argv[]) {
 
     struct timeval stime;
     struct timeval etime;
+    struct timeval s_finesse_time;
+    struct timeval e_finesse_time;
+
+    uint64_t super_feature_per_chunk = 3;
+    uint64_t feature_per_chunk = 12;
+    uint64_t feature_per_super_feature = 4;
 
     AbsChunker* test_chunker; 
+    FinesseUtil* finesse_util;
+    RabinCtx_t rabin_ctx;
+    RabinFPUtil* rabin_util = new RabinFPUtil(config.GetSimilarSlidingWinSize());
+    finesse_util = new FinesseUtil(super_feature_per_chunk, feature_per_chunk,
+        feature_per_super_feature);
+    rabin_util->NewCtx(rabin_ctx);
+
     switch (type) {
         case FIXED_SIZE_CHUNKING: {
             test_chunker = new FixChunker();
@@ -120,6 +134,7 @@ int main(int argc, char* argv[]) {
     }
 
     double chunking_time = 0;
+    double finesse_time = 0;
     bool is_end = false;
     while (!is_end) {
         uint64_t pending_size = 0;
@@ -130,18 +145,28 @@ int main(int argc, char* argv[]) {
 
         uint8_t chunk_buf[MAX_CHUNK_SIZE] = {0};
         uint32_t chunk_size;
-        gettimeofday(&stime, NULL);
+        uint64_t features[super_feature_per_chunk];
         while (true) {
+            gettimeofday(&stime, NULL);
             chunk_size = test_chunker->GenerateOneChunk(chunk_buf);
+            gettimeofday(&etime, NULL);
+            chunking_time += tool::GetTimeDiff(stime, etime);
+
             if (!chunk_size) {
                 break;
-            } else {
-                // TODO: process the chunk here
-                // cout << chunk_size << endl;
             }
+
+            // TODO: process the chunk here
+            // cout << chunk_size << endl;
+            gettimeofday(&s_finesse_time, NULL);
+            finesse_util->ExtractFeature(rabin_ctx, chunk_buf, chunk_size,
+                features);
+            for (uint32_t i = 0; i < super_feature_per_chunk; i++) {
+                cout << features[i] << endl;
+            }
+            gettimeofday(&e_finesse_time, NULL);
+            finesse_time += tool::GetTimeDiff(s_finesse_time, e_finesse_time);
         }
-        gettimeofday(&etime, NULL);
-        chunking_time += tool::GetTimeDiff(stime, etime);
         is_end = input_file_hdl.eof();
     }
 
@@ -150,7 +175,12 @@ int main(int argc, char* argv[]) {
     fprintf(stdout, "total chunk num: %lu\n", test_chunker->_total_chunk_num);
     fprintf(stdout, "chunking speed (MiB/s): %lf\n", static_cast<double>(test_chunker->_total_file_size) / 
         1024.0 / 1024.0 / chunking_time);
+    fprintf(stdout, "finesse speed (MiB/s): %lf\n", static_cast<double>(test_chunker->_total_file_size) / 
+        1024.0 / 1024.0 / finesse_time);
     input_file_hdl.close();
     delete test_chunker;
+    delete finesse_util;
+    rabin_util->FreeCtx(rabin_ctx);
+    delete rabin_util;
     return 0;
 }
