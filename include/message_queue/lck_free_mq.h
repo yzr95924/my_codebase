@@ -13,13 +13,13 @@
 #define MY_CODEBASE_LCK_FREE_MQ_H
 
 #include "../define.h"
+#include "abs_mq.h"
 #include "readerwriterqueue.h"
-#include <boost/atomic.hpp>
 
 using namespace std;
 
 template <class T>
-class LckFreeMQ {
+class LckFreeMQ : public AbsMQ<T> {
     private:
         string my_name_ = "LckFreeMQ";
         moodycamel::ReaderWriterQueue<T>* lockFreeQueue_;
@@ -27,9 +27,6 @@ class LckFreeMQ {
         uint32_t max_queue_size_;
 
     public:
-        // to show whether the whole process is done
-        boost::atomic<bool> _done;
-        
         /**
          * @brief Construct a new Message Queue object
          * 
@@ -37,7 +34,6 @@ class LckFreeMQ {
         LckFreeMQ(uint32_t max_queue_size) {
             max_queue_size_ = max_queue_size;
             lockFreeQueue_ = new moodycamel::ReaderWriterQueue<T>(max_queue_size_);
-            _done = false;
         }
 
         /**

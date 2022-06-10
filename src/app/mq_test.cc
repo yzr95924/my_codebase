@@ -11,8 +11,7 @@
 
 #include "../../include/define.h"
 #include "../../include/constVar.h"
-#include "../../include/message_queue/blocked_mq.h"
-#include "../../include/message_queue/lck_free_mq.h"
+#include "../../include/message_queue/mq_factory.h"
 
 #include <boost/thread/thread.hpp>
 
@@ -27,10 +26,11 @@ typedef struct {
 
 uint32_t queue_size = 1000;
 uint32_t factor = 4;
-LckFreeMQ<MQ_t>* input_mq;
+AbsMQ<MQ_t>* input_mq;
+MQFactory<MQ_t> mq_factory;
 uint64_t sleep_time_ms = 10;
 
-void RunTh1(LckFreeMQ<MQ_t>* input_mq) {
+void RunTh1(AbsMQ<MQ_t>* input_mq) {
     string my_name = "thread-1";
     tool::Logging(my_name.c_str(), "running.\n");
     for (int i = 0; i < queue_size * 4; i++) {
@@ -45,7 +45,7 @@ void RunTh1(LckFreeMQ<MQ_t>* input_mq) {
     return ;
 }
 
-void RunTh2(LckFreeMQ<MQ_t>* output_mq) {
+void RunTh2(AbsMQ<MQ_t>* output_mq) {
     string my_name = "thread-2";
     tool::Logging(my_name.c_str(), "running.\n");
     bool job_done_flag = false;
@@ -74,8 +74,8 @@ void RunTh2(LckFreeMQ<MQ_t>* output_mq) {
 
 int main(int argc, char* argv[]) {
     srand(tool::GetStrongSeed());
-    input_mq = new LckFreeMQ<MQ_t>(queue_size);
-
+    input_mq = mq_factory.CreateMQ(BLOCKED_MQ, queue_size);
+    
     boost::thread* tmp_th;
     vector<boost::thread*> th_list;
 

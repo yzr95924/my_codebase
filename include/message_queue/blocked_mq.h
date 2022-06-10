@@ -13,12 +13,12 @@
 #define MY_CODEBASE_BLOCKED_MQ_H
 
 #include "../define.h"
-#include <boost/atomic.hpp>
+#include "abs_mq.h"
 
 using namespace std;
 
 template <class T>
-class BlockedMQ {
+class BlockedMQ : public AbsMQ<T> {
     private:
         string my_name_ = "BlockedMQ";
         mutex mq_mtx_;
@@ -29,9 +29,6 @@ class BlockedMQ {
         uint32_t max_queue_size_;
 
     public:
-        // to show whether to whole process is done
-        boost::atomic<bool> _done;
-
         /**
          * @brief Construct a new Blocked MQ object
          * 
@@ -39,7 +36,6 @@ class BlockedMQ {
          */
         BlockedMQ(uint32_t max_queue_size) {
             max_queue_size_ = max_queue_size;
-            _done = false;            
         }
 
         /**
@@ -58,9 +54,9 @@ class BlockedMQ {
         }
 
         /**
-         * @brief push a data to the queue
+         * @brief push a data item to the queue
          * 
-         * @param data the origin data
+         * @param data the data item
          * @return true success
          * @return false fails
          */
@@ -85,7 +81,7 @@ class BlockedMQ {
         bool Pop(T& data) {
             unique_lock<mutex> lck(mq_mtx_);
             while (blocked_mq_.empty()) {
-                if (!_done) {
+                if (!this->_done) {
                     empty_sign_.wait(lck);
                 } else {
                     return false;
