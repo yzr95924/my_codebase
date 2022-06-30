@@ -19,6 +19,14 @@ using namespace std;
 
 const string my_name = "MQTest";
 
+void Usage() {
+    fprintf(stderr, "%s -t [MQ type]\n"
+        "t [MQ type]:\n"
+        "\tBlocked MQ: 0\n"
+        "\tLck-free MQ: 1\n", my_name.c_str());
+    return ;
+}
+
 typedef struct {
     int x;
     int y;
@@ -74,7 +82,46 @@ void RunTh2(AbsMQ<MQ_t>* output_mq) {
 
 int main(int argc, char* argv[]) {
     srand(tool::GetStrongSeed());
-    input_mq = mq_factory.CreateMQ(BLOCKED_MQ, queue_size);
+    const char opt_str[] = "t:";
+
+    if (argc != sizeof(opt_str)) {
+        tool::Logging(my_name.c_str(), "wrong argc number.\n");
+        Usage();
+        exit(EXIT_FAILURE);
+    }
+    
+    int option;
+    uint32_t method_type = 0;
+    while ((option = getopt(argc, argv, opt_str)) != -1) {
+        switch (option) {
+            case 't': {
+                switch (atoi(optarg)) {
+                    case BLOCKED_MQ: {
+                        method_type = BLOCKED_MQ;
+                        break;
+                    }
+                    case LCK_FREE_MQ: {
+                        method_type = LCK_FREE_MQ;
+                        break;
+                    }
+                    default: {
+                        tool::Logging(my_name.c_str(), "wrong MQ type.\n");
+                        Usage();
+                        exit(EXIT_FAILURE);
+                    }
+                }
+                break;
+            }
+            case '?': {
+                tool::Logging(my_name.c_str(), "error optopt: %c\n", optopt);
+                tool::Logging(my_name.c_str(), "error opterr: %d\n", opterr);
+                Usage();
+                exit(EXIT_FAILURE);
+            }
+        }
+    }
+
+    input_mq = mq_factory.CreateMQ(method_type, queue_size);
     
     boost::thread* tmp_th;
     vector<boost::thread*> th_list;

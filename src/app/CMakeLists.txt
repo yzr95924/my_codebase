@@ -18,3 +18,6 @@ target_link_libraries(RabinTest ${FINAL_OBJ})
 
 add_executable(MQTest mq_test.cc)
 target_link_libraries(MQTest ${FINAL_OBJ})
+
+add_executable(MainTest main_test.cc)
+target_link_libraries(MainTest ${FINAL_OBJ})

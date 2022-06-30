@@ -14,7 +14,7 @@
 const string my_name = "CryptoTest";
 
 void Usage() {
-    fprintf(stderr, "%s -i [input file path] -c [cipher type] -h [hash type] -s [chunk size (KiB)] "
+    fprintf(stderr, "%s -i [input file path] -c [cipher type] -h [hash type] -s [chunk size (KiB)]\n"
         "-c [cipher type]:\n"
         "\tAES-256-GCM: 0\n"
         "\tAES-128-GCM: 1\n"
