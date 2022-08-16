@@ -21,3 +21,6 @@ target_link_libraries(MQTest ${FINAL_OBJ})
 
 add_executable(MainTest main_test.cc)
 target_link_libraries(MainTest ${FINAL_OBJ})
+
+add_executable(RedisTest hiredis_test.cc)
+target_link_libraries(RedisTest ${FINAL_OBJ})
