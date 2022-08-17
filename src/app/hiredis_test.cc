@@ -9,8 +9,9 @@
  * 
  */
 
-#include <sw/redis++/redis++.h>
+#include <hiredis/hiredis.h>
 #include "../../include/define.h"
+
 
 uint64_t TEST_TIME = 100000000;
 
@@ -27,11 +28,48 @@ uint32_t RandomGen(uint32_t a) {
 
 int main(int argc, char* argv[]) {
     /* code */
-    auto redis = sw::redis::Redis("tcp://127.0.0.1:6379");
-    std::cout << redis.ping() << std::endl;
+    // auto redis = sw::redis::Redis("tcp://127.0.0.1:6379/1"); // choose the 1st database
+    // std::cout << redis.ping() << std::endl;
 
-    string test_key = "key";
-    string test_val = "value";
+    redisContext* redis_ctx;
+    redisReply* redis_reply;
+
+    redis_ctx = redisConnect("127.0.0.1", 6379);
+    if (redis_ctx->err) {
+        cout << "error: " << redis_ctx->errstr << endl;
+        exit(EXIT_FAILURE);
+    }
+
+    redis_reply = (redisReply*)redisCommand(redis_ctx, "SELECT 1");
+    freeReplyObject(redis_reply);
+    redis_reply = (redisReply*)redisCommand(redis_ctx, "DBSIZE");
+    if (redis_reply->type == REDIS_REPLY_INTEGER && redis_reply->integer == 0) {
+        cout << "DB 1 is empty" << endl;
+    } else {
+        cout << "DB 1 is not empty" << endl;
+    }
+    freeReplyObject(redis_reply);
+
+    // insert key-value pair
+    uint8_t test_buf[16] = {1};
+    tool::PrintBinaryArray(test_buf, 16);
+    uint8_t key[16] = {0};
+
+    redis_reply = (redisReply*)redisCommand(redis_ctx, "SET %b %b",
+        key, 16, test_buf, 16);
+    freeReplyObject(redis_reply);
+
+    redis_reply = (redisReply*)redisCommand(redis_ctx, "GET %b",
+        key, 16);
+    cout << "Get" << endl;
+    tool::PrintBinaryArray((uint8_t*)redis_reply->str, redis_reply->len);
+    freeReplyObject(redis_reply);
+
+    // clean the database
+    redis_reply = (redisReply*)redisCommand(redis_ctx, "FLUSHDB");
+    freeReplyObject(redis_reply);
+
+    redisFree(redis_ctx);
 
 
     struct timeval s_time;
@@ -52,14 +90,6 @@ int main(int argc, char* argv[]) {
     uint64_t total_size = TEST_TIME * sizeof(uint32_t);
 
     cout << "speed: " << static_cast<double>(total_size) / 1024.0 / 1024.0 / total_time << endl;
-
-    redis.set(test_key, test_val);
-    cout << "test set key: " << *(redis.get(test_key)) << endl;
-
-    redis.del(test_key);
-    cout << "test del key: " << (redis.exists(test_key)) << endl;
-
-    redis.save();
 
     return 0;
 }

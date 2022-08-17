@@ -3,7 +3,7 @@ set(CMAKE_BUILD_TYPE "Debug")
 cmake_minimum_required(VERSION 3.1)
 project(MyCodeBase)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_VERBOSE_MAKEFILE TRUE)
 set(CMAKE_MODULE_PATH /usr/share/cmake-3.10/Modules/)
 list(APPEND CMAKE_MODULE_PATH ${MyCodeBase_SOURCE_DIR}/cmake)
