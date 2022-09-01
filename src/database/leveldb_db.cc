@@ -17,6 +17,7 @@
  * @param db_name the path of the db file
  */
 LeveldbDatabase::LeveldbDatabase(string db_name) {
+    db_name_ = db_name;
     this->OpenDB(db_name);
 }
 
@@ -47,7 +48,6 @@ bool LeveldbDatabase::OpenDB(string db_name) {
         tool::Logging(my_name_.c_str(), "database lock.\n");
         return false;
     }
-    db_name_ = db_name;
 
     options_.create_if_missing = true;
     options_.block_cache = leveldb::NewLRUCache(256 * 1024 * 1024); // 256M cache

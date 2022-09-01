@@ -1,54 +1,60 @@
 /**
- * @file leveldbDatabase.h
+ * @file rocksdb_db.h
  * @author Zuoru YANG (zryang@cse.cuhk.edu.hk)
- * @brief implementation the database based on leveldb
+ * @brief define the interface of using RocksDB
  * @version 0.1
- * @date 2020-01-25
+ * @date 2022-08-19
  * 
- * @copyright Copyright (c) 2020
+ * @copyright Copyright (c) 2022
  * 
  */
-#ifndef MY_CODEBASE_LEVELDB_DB_H
-#define MY_CODEBASE_LEVELDB_DB_H
+
+#ifndef MY_CODEBASE_ROCKSDB_DB_H
+#define MY_CODEBASE_ROCKSDB_DB_H
 
 #include "abs_db.h"
 
-#include <leveldb/db.h>
-#include <leveldb/cache.h>
+#include <rocksdb/db.h>
+#include <rocksdb/cache.h>
+#include <rocksdb/env.h>
+#include <rocksdb/table.h>
 #include <bits/stdc++.h>
 
-class LeveldbDatabase : public AbsDatabase {
-    protected:
-        string my_name_ = "LeveldbDatabase";
+class RocksdbDatabase : public AbsDatabase {
+    private:
+        string my_name_ = "RocksdbDatabase";
         /* data */
-        leveldb::DB* level_db_obj_ = NULL;
-        leveldb::Options options_;
+        rocksdb::DB* rocks_db_obj_ = NULL;
 
+        // global setting
+        rocksdb::Options options_;
+        rocksdb::WriteOptions write_options_;
+        rocksdb::ReadOptions read_options_;
     public:
         /**
-         * @brief Construct a new Database object
+         * @brief Construct a new RocksdbDatabase object
          * 
          * @param db_name the path of the db file
          */
-        LeveldbDatabase(string db_name);
+        RocksdbDatabase(string db_name);
 
         /**
-         * @brief Destroy the leveldb Database object
+         * @brief Destroy the RocksdbDatabase object
          * 
          */
-        ~LeveldbDatabase();
+        ~RocksdbDatabase();
 
         /**
          * @brief open a database
          * 
-         * @param db_name the db path 
+         * @param db_name the db path
          * @return true success
          * @return false fail
          */
         bool OpenDB(string db_name);
 
         /**
-         * @brief execute query over database
+         * @brief query the database
          * 
          * @param key key
          * @param value value
@@ -58,7 +64,7 @@ class LeveldbDatabase : public AbsDatabase {
         bool Query(const string& key, string& value);
 
         /**
-         * @brief insert the (key, value) pair
+         * @brief insert the key, value pair
          * 
          * @param key key
          * @param value value
