@@ -4,11 +4,10 @@ cmake_minimum_required(VERSION 3.1)
 project(MyCodeBase)
 
 set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 set(CMAKE_VERBOSE_MAKEFILE TRUE)
-set(CMAKE_MODULE_PATH /usr/share/cmake-3.10/Modules/)
 list(APPEND CMAKE_MODULE_PATH ${MyCodeBase_SOURCE_DIR}/cmake)
 message(STATUS "CMAKE MODULE Path: ${CMAKE_MODULE_PATH}")
-
 
 set(EXECUTABLE_OUTPUT_PATH ${MyCodeBase_SOURCE_DIR}/bin)
 set(LIBRARY_OUTPUT_PATH ${MyCodeBase_SOURCE_DIR}/lib)
