@@ -15,7 +15,7 @@
 #include "../../include/dedup/fastcdc_chunker.h"
 #include "../../include/dedup/chunker_factory.h"
 #include "../../include/dedup/finesse_util.h"
-#include "../../include/constVar.h"
+#include "../../include/const_var.h"
 #include "../../include/crypto/crypto_util.h"
 
 string my_name = "ChunkingTest";

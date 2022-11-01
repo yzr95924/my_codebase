@@ -9,7 +9,7 @@
  * 
  */
 
-#include "../../include/socket.h"
+#include "../../include/network/socket.h"
 
 
 Socket::Socket(const int type, string ip, short port) {
@@ -115,26 +115,26 @@ Socket Socket::Listen() {
 }
 
 
-bool Socket::Send(uint8_t* buffer, size_t sendSize) {
-    int finishSize = 0;
+bool Socket::Send(uint8_t* buf, size_t send_size) {
+    size_t finish_size = 0;
     int len;
-    int s = write(this->fd_, (const uint8_t*)&sendSize, sizeof(sendSize));
+    int s = write(this->fd_, (const uint8_t*)&send_size, sizeof(send_size));
     if (s == -1) {
         fprintf(stderr, "Socket: send error\n");
         this->Finish();
         return false;
     }
 
-    while (finishSize < sendSize) {
-        len = write(this->fd_, buffer + finishSize, sendSize - finishSize);
+    while (finish_size < send_size) {
+        len = write(this->fd_, buf + finish_size, send_size - finish_size);
         if (len == -1) {
             fprintf(stderr, "Socket: send error %u\n", errno);
             this->Finish();
             return false;
         }
-        finishSize += len;
+        finish_size += len;
     }
-    if (finishSize != sendSize) {
+    if (finish_size != send_size) {
         fprintf(stderr, "Socket: finish sent size error\n");
         this->Finish();
         return false;
@@ -143,34 +143,35 @@ bool Socket::Send(uint8_t* buffer, size_t sendSize) {
 }
 
 
-bool Socket::Recv(uint8_t* buffer, size_t& recvSize) {
-    int receivedSize = 0;
-    int readByteCount = 0;
-    readByteCount = read(this->fd_, (uint8_t*)&recvSize, sizeof(recvSize));
-    if (readByteCount == 0) {
+bool Socket::Recv(uint8_t* buf, size_t& exp_recv_size) {
+    size_t recv_size = 0;
+    int read_byte_num = 0;
+    read_byte_num = read(this->fd_, (uint8_t*)&exp_recv_size,
+        sizeof(exp_recv_size));
+    if (read_byte_num == 0) {
         fprintf(stderr, "Socket: size = 0\n");
         this->Finish();
         return false;
     }
 
-    if(recvSize < 0) {
-        fprintf(stderr, "Socket: recvSize < 0\n");
+    if(exp_recv_size == 0) {
+        fprintf(stderr, "Socket: recvSize = 0\n");
         this->Finish();
         return false;
     }
 
-    while (receivedSize < recvSize) {
-        readByteCount = read(this->fd_, buffer + receivedSize, recvSize - receivedSize);
+    while (recv_size < exp_recv_size) {
+        read_byte_num = read(this->fd_, buf + recv_size, exp_recv_size - recv_size);
         // should check errno here
-        if (readByteCount <= 0) {
+        if (read_byte_num <= 0) {
             fprintf(stderr, "Socket: recv errno: %u\n", errno);
             this->Finish();
             return false;
         }
-        receivedSize += readByteCount;
+        recv_size += read_byte_num;
     }
 
-    if (receivedSize != recvSize) {
+    if (recv_size != exp_recv_size) {
         fprintf(stderr, "Socket: finish received size error\n");
         this->Finish();
         return false;

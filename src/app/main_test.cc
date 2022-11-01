@@ -10,7 +10,7 @@
  */
 
 #include "../../include/define.h"
-#include "../../include/constVar.h"
+#include "../../include/const_var.h"
 #include "../../include/compression/compress_util.h"
 #include "../../include/dedup/fastcdc_chunker.h"
 
@@ -54,7 +54,6 @@ void CompressionWithPadding(EncFeatureChunk_t* input_chunk) {
         // it can directly return
     } else {
         // it can be compressed --> tmp_comp_chunk, check padding
-        uint32_t size_after_padding = 0;
         if (tmp_comp_size + padding_size < input_chunk->raw_size) {
             uint64_t* padding_data = (uint64_t*) (tmp_comp_data + tmp_comp_size);
             for (size_t i = 0; i < padding_block_num; i++) {

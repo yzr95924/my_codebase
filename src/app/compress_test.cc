@@ -105,7 +105,7 @@ int main(int argc, char* argv[]) {
 
     bool is_end = false;
     bool correct_test = true;
-    int read_byte_num = 0;
+    int64_t read_byte_num = 0;
     struct timeval stime;
     struct timeval etime;
     double compressed_time = 0;
@@ -141,7 +141,7 @@ int main(int argc, char* argv[]) {
         if (correct_test) {
             // check the size first
             tool::Logging(my_name.c_str(), "read byte size: %lu\n", read_byte_num);
-            if (uncompressed_size != read_byte_num) {
+            if (uncompressed_size != static_cast<size_t>(read_byte_num)) {
                 tool::Logging(my_name.c_str(), "uncompressed length is not correct.\n");
                 exit(EXIT_FAILURE);
             } else {

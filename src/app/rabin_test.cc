@@ -82,10 +82,9 @@ int main(int argc, char* argv[]) {
             break;
         }
 
-        uint64_t fp = 0;
         gettimeofday(&stime, NULL);
         for (size_t i = 0; i < pending_size; i++) {
-            fp = rabin_util->SlideOneByte(rabin_ctx, read_buf[i]);
+            rabin_util->SlideOneByte(rabin_ctx, read_buf[i]);
         }
         gettimeofday(&etime, NULL);
         rabin_time += tool::GetTimeDiff(stime, etime);

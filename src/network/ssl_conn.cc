@@ -137,6 +137,7 @@ void SSLConnection::Finish(pair<int, SSL*> ssl_pair) {
     // check the ssl shutdown flag state
     if ((SSL_get_shutdown(ssl_pair.second) & SSL_SENT_SHUTDOWN) != 1) {
         tool::Logging(my_name_.c_str(), "set the sent shutdown flag error.\n");
+        exit(EXIT_FAILURE);
     }
 
     // wait the close alert from another peer
@@ -145,6 +146,7 @@ void SSLConnection::Finish(pair<int, SSL*> ssl_pair) {
     ret_stat = SSL_read(ssl_pair.second, (uint8_t*)&tmp, sizeof(tmp));
     if (SSL_get_error(ssl_pair.second, ret_stat) != SSL_ERROR_ZERO_RETURN) {
         tool::Logging(my_name_.c_str(), "receive shutdown flag error.\n");
+        exit(EXIT_FAILURE);
     }
     tmp = SSL_shutdown(ssl_pair.second);
     if (tmp != 1) {
@@ -254,7 +256,7 @@ bool SSLConnection::SendData(SSL* ssl_conn, uint8_t* data, uint32_t size) {
         return false;
     }
 
-    int current_send_size = 0;
+    uint32_t current_send_size = 0;
     while (current_send_size < size) {
         write_stat = SSL_write(ssl_conn, data + current_send_size,
             size - current_send_size);
@@ -293,7 +295,7 @@ bool SSLConnection::ReceiveData(SSL* ssl_conn, uint8_t* data, uint32_t& recv_siz
         return false;
     }
 
-    int current_recv_size = 0;
+    uint32_t current_recv_size = 0;
     while (current_recv_size < msg_size) {
         read_stat = SSL_read(ssl_conn, data + current_recv_size,
             msg_size - current_recv_size);

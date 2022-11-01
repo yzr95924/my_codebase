@@ -10,7 +10,7 @@
  */
 
 #include "../../include/define.h"
-#include "../../include/constVar.h"
+#include "../../include/const_var.h"
 #include "../../include/message_queue/mq_factory.h"
 
 #include <boost/thread/thread.hpp>
@@ -28,8 +28,8 @@ void Usage() {
 }
 
 typedef struct {
-    int x;
-    int y;
+    size_t x;
+    size_t y;
 } MQ_t;
 
 uint32_t queue_size = 1000;
@@ -41,9 +41,9 @@ uint64_t sleep_time_ms = 10;
 void RunTh1(AbsMQ<MQ_t>* input_mq) {
     string my_name = "thread-1";
     tool::Logging(my_name.c_str(), "running.\n");
-    for (int i = 0; i < queue_size * 4; i++) {
+    for (size_t i = 0; i < queue_size * 4; i++) {
         MQ_t input_msg{i, i};
-        tool::Logging(my_name.c_str(), "insert {%d, %d}\n", i, i);
+        tool::Logging(my_name.c_str(), "insert {%lu, %lu}\n", i, i);
         if (!input_mq->Push(input_msg)) {
             tool::Logging(my_name.c_str(), "insert chunk to output MQ error.\n");
             exit(EXIT_FAILURE);
@@ -66,8 +66,8 @@ void RunTh2(AbsMQ<MQ_t>* output_mq) {
         }
 
         if (output_mq->Pop(tmp_msg)) {
-            tool::Logging(my_name.c_str(), "recv {%d, %d}\n", tmp_msg.x, tmp_msg.y);
-            tool::Logging(my_name.c_str(), "wait {%d, %d}\n", tmp_msg.x, tmp_msg.y);
+            tool::Logging(my_name.c_str(), "recv {%lu, %lu}\n", tmp_msg.x, tmp_msg.y);
+            tool::Logging(my_name.c_str(), "wait {%lu, %lu}\n", tmp_msg.x, tmp_msg.y);
             std::this_thread::sleep_for(std::chrono::milliseconds(sleep_time_ms));
         }
 

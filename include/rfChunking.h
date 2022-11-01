@@ -13,7 +13,7 @@
 #define CHUNKING_LIB_RF
 
 #include "define.h"
-#include "dataStructure.h"
+#include "data_structure.h"
 
 
 using namespace std;

@@ -20,6 +20,7 @@
 CryptoUtil::CryptoUtil(int cipher_type, int hash_type) {
     // for openssl optimization
     OPENSSL_init_crypto(0, NULL);
+    ERR_load_crypto_strings();
 
     cipher_type_ = static_cast<ENCRYPT_SET>(cipher_type);
     hash_type_ = static_cast<HASH_SET>(hash_type);
@@ -34,6 +35,7 @@ CryptoUtil::CryptoUtil(int cipher_type, int hash_type) {
  * 
  */
 CryptoUtil::~CryptoUtil() {
+    ERR_free_strings();
     EVP_PKEY_free(p_key_);
 }
 
@@ -46,7 +48,7 @@ CryptoUtil::~CryptoUtil() {
  * @param hash the output hash <return>
  */
 void CryptoUtil::GenerateHash(EVP_MD_CTX* ctx, uint8_t* data, uint32_t size, uint8_t* hash) {
-    int expectedHashSize = 0;
+    uint32_t expectedHashSize = 0;
     switch (hash_type_) {
         case SHA_1: {
             if (!EVP_DigestInit_ex(ctx, EVP_sha1(), NULL)) {
@@ -352,7 +354,7 @@ uint32_t CryptoUtil::DecryptWithKeyIV(EVP_CIPHER_CTX* ctx, uint8_t* cipher, cons
  */
 void CryptoUtil::GenerateHMAC(EVP_MD_CTX* ctx, uint8_t* data, const int size,
     EVP_PKEY* p_key, uint8_t* hmac) {
-    int expectedHashSize = 0;
+    size_t expectedHashSize = 0;
 
     switch (hash_type_) {
         case SHA_1: {

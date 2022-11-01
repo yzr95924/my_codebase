@@ -179,7 +179,7 @@ int main(int argc, char* argv[]) {
 
     bool is_end = false;
     bool correct_test = true;
-    int read_byte_num = 0;
+    int64_t read_byte_num = 0;
     struct timeval stime;
     struct timeval etime;
     double enc_time = 0;
@@ -214,7 +214,7 @@ int main(int argc, char* argv[]) {
         if (correct_test) {
             // check the size first
             tool::Logging(my_name.c_str(), "read byte size: %lu\n", read_byte_num);
-            if (dec_chunk_size != read_byte_num) {
+            if (dec_chunk_size != static_cast<uint32_t>(read_byte_num)) {
                 tool::Logging(my_name.c_str(), "dec length is not correct.\n");
                 exit(EXIT_FAILURE);
             } else {

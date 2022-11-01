@@ -12,8 +12,11 @@
 #ifndef EDRSTORE_CONFIGURE_H
 #define EDRSTORE_CONFIGURE_H
 
+#define BOOST_BIND_GLOBAL_PLACEHOLDERS
+
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
+#include "const_var.h"
 #include "define.h"
 
 using namespace std;

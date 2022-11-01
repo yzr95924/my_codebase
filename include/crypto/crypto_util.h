@@ -1,5 +1,5 @@
 /**
- * @file cryptoPrimitive.h
+ * @file crypto_util.h
  * @author Zuoru YANG (zryang@cse.cuhk.edu.hk)
  * @brief define interfaces of crypto module (hash&encryption)
  * @version 0.1
@@ -15,8 +15,8 @@
 #include <openssl/evp.h>
 #include <openssl/crypto.h>
 #include <openssl/err.h>
-#include "../dataStructure.h"
-#include "../configure.h"
+#include "../data_structure.h"
+#include "../define.h"
 
 using namespace std;
 
@@ -35,7 +35,6 @@ class CryptoUtil {
 
         // update the pKey
         EVP_PKEY* p_key_;
-
 
     public:
         /**

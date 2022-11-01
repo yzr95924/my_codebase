@@ -13,7 +13,7 @@
 #define MY_CODEBASE_COMPRESS_H
 
 #include "../define.h"
-#include "../constVar.h"
+#include "../const_var.h"
 
 // for compression header 
 #include <lz4.h>

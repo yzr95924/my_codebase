@@ -123,7 +123,6 @@ namespace tool {
         using std::ifstream;
         using std::string;
 
-        uint64_t vm_usage     = 0;
         uint64_t resident_set = 0;
 
         // 'file' stat seems to give the most reliable results
@@ -150,7 +149,6 @@ namespace tool {
         stat_stream.close();
 
         long page_size_kb = sysconf(_SC_PAGE_SIZE) / 1024; // in case x86-64 is configured to use 2MB pages
-        vm_usage     = vsize / 1024 ;
         resident_set = rss * page_size_kb;
         return resident_set; // only for PM
     }
